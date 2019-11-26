@@ -3,12 +3,12 @@
     <Metadata>
         <Identity Id="Switchyard.Alexander Wiedemann.25872dc3-9448-462d-9dc4-ae1cf1a0077b" Version="1.0" Language="en-US" Publisher="Alexander Wiedemann" />
         <DisplayName>Switchyard</DisplayName>
-        <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C# with less effort:
+        <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C# with less effort
  - Expand enum to union type
  - Generate StateMachine / FluentApi from dot graph.</Description>
         <MoreInfo>https://github.com/bluehands/Switchyard</MoreInfo>
         <License>LICENSE.txt</License>
-        <Tags>Immutable state machine, Union type, Discriminated union</Tags>
+        <Tags>Refactoring</Tags>
     </Metadata>
     <Installation>
         <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 17.0)" />
