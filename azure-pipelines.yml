@@ -10,7 +10,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '03 Code/Source/*.sln'
+  solution: 'src/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   patch: $[counter('VersionCounter', 0)]
