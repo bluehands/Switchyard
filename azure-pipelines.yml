@@ -4,13 +4,13 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+- '*'
 
 pool:
   vmImage: 'windows-latest'
 
 variables:
-  solution: '03 Code/Source/*.sln'
+  solution: 'src/*.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   patch: $[counter('VersionCounter', 0)]
@@ -39,8 +39,8 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)'
-    Contents:
-      README.md|
+    Contents: |
+      README.md
       build/**
       **/*.vsix
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
