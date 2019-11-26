@@ -1,0 +1,6 @@
+﻿digraph G {
+  a;
+  b;
+
+  a -> b [label="atob"]
+}

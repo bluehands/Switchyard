@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
+    <Metadata>
+        <Identity Id="Switchyard.Alexander Wiedemann.25872dc3-9448-462d-9dc4-ae1cf1a0077b" Version="1.0" Language="en-US" Publisher="Alexander Wiedemann" />
+        <DisplayName>Switchyard</DisplayName>
+        <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C# with less effort:
+ - Expand enum to union type
+ - Generate StateMachine / FluentApi from dot graph.</Description>
+        <MoreInfo>https://github.com/bluehands/Switchyard</MoreInfo>
+        <License>LICENSE.txt</License>
+        <Tags>Immutable state machine, Union type, Discriminated union</Tags>
+    </Metadata>
+    <Installation>
+        <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0, 17.0)" />
+    </Installation>
+    <Dependencies>
+        <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.7.2,)" />
+    </Dependencies>
+    <Prerequisites>
+        <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[15.0,)" DisplayName="Visual Studio core editor" />
+    </Prerequisites>
+    <Assets>
+        <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
+        <Asset Type="Microsoft.VisualStudio.Assembly" d:Source="File" Path="System.Collections.Immutable.dll" AssemblyName="System.Collections.Immutable, Version=1.2.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+    </Assets>
+</PackageManifest>

@@ -1,0 +1,13 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/03 Code/Source/.vs/FluentApiGenerator
+
+/03 Code/Source/packages
+obj
+bin
+*.suo
+/**/.vs
+/**/packages
+*.user
