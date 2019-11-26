@@ -9,7 +9,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard", "Switchyard\Sw
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.CodeGeneration", "Switchyard.CodeGeneration\Switchyard.CodeGeneration.csproj", "{84FD7746-0915-40B5-9886-65BDCED56466}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.Test", "..\..\05 Test Plans and Reports\Unit Testing\Switchyard.Test\Switchyard.Test.csproj", "{9F2F731B-78FC-49B0-9A5F-5EBCA125C964}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.Test", "..\test\Unit Testing\Switchyard.Test\Switchyard.Test.csproj", "{9F2F731B-78FC-49B0-9A5F-5EBCA125C964}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
