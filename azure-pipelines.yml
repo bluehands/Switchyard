@@ -4,7 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/apps/windows/dot-net
 
 trigger:
-- master
+- '*'
 
 pool:
   vmImage: 'windows-latest'
@@ -39,8 +39,8 @@ steps:
 - task: CopyFiles@2
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)'
-    Contents:
-      README.md|
+    Contents: |
+      README.md
       build/**
       **/*.vsix
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
