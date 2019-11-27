@@ -33,8 +33,6 @@ public class SFtpConfig
 
 /// ......
 
-/// ......
-
 public class Consumer
 {
 	public void Connect(SFtpConfig config)
@@ -104,7 +102,7 @@ public abstract class SFtpConfig
 
 ```
 
-One can can add properties to the union case classes and intialize them from the constructs. Just run the refactoring again and static initializers will be adapted accordingly:
+One can can add properties to the union case classes and intialize them from constructor parameters. Just run the refactoring again and static initializers will be adapted accordingly:
 
 ```csharp
 
