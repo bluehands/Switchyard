@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -7,8 +8,8 @@ namespace Switchyard.CodeGeneration
 {
     public static class WrapEnumToClass
     {
-        public const string DefaultNestedEnumTypeName = "Ids";
-        public const string DefaultEnumPropertyName = "Id";
+        public const string DefaultNestedEnumTypeName = "UnionCases";
+        public const string DefaultEnumPropertyName = "UnionCase";
 
         public static SyntaxNode GenerateEnumClass(this SyntaxNode node, string enumTypeName, Option<ClassDeclarationSyntax> unionTypeDeclaration, string nestedEnumTypeName = DefaultNestedEnumTypeName, string enumPropertyName = DefaultEnumPropertyName)
         {
@@ -56,11 +57,11 @@ namespace Switchyard.CodeGeneration
                     .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("string"), "ToString")
                         .Public()
                         .Override()
-                        .WithBody(SyntaxFactory.Block(SyntaxFactory.ParseStatement($"return Enum.GetName(typeof({m_NestedEnumTypeName}), {m_EnumPropertyName}) ?? Id.ToString();")))
+                        .WithExpressionBody($"Enum.GetName(typeof({m_NestedEnumTypeName}), {m_EnumPropertyName}) ?? {DefaultEnumPropertyName}.ToString()")
                     )
                     .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "Equals")
                         .AddParameterListParameters(SyntaxFactory.Parameter(SyntaxFactory.ParseToken("other")).WithType(SyntaxFactory.ParseTypeName(m_EnumTypeName)))
-                        .WithBody(SyntaxFactory.Block(SyntaxFactory.ParseStatement($"return {m_EnumPropertyName} == other.{m_EnumPropertyName};"))))
+                        .WithExpressionBody($"{m_EnumPropertyName} == other.{m_EnumPropertyName}"))
                     .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "Equals")
                         .Public()
                         .Override()
@@ -75,11 +76,8 @@ namespace Switchyard.CodeGeneration
                         .Public()
                         .Override()
                         .WithParameterList(SyntaxFactory.ParameterList())
-                        .WithBody(SyntaxFactory.Block(
-                            SyntaxFactory.ParseStatement($"return (int) {m_EnumPropertyName};"))
-                        )
+                        .WithExpressionBody($"(int) {m_EnumPropertyName}")
                     );
-
 
                 return classDeclaration;
             }
@@ -98,57 +96,121 @@ namespace Switchyard.CodeGeneration
 
             public override SyntaxNode VisitClassDeclaration(ClassDeclarationSyntax node)
             {
+                ClassDeclarationSyntax InsertAfterLastStaticCase(ClassDeclarationSyntax classDeclaration, IEnumerable<MemberDeclarationSyntax> toAdd)
+                {
+                    var members = classDeclaration.Members;
+                    var staticCaseIndex = classDeclaration.Members.LastIndexOf(m =>
+                        m.Modifiers.Select(_ => _.ToString()).Except(new[] {"readonly"}).SequenceEqual(new[] {"public", "static"}));
+                    return classDeclaration.WithMembers(members.InsertRange(staticCaseIndex + 1, toAdd));
+                }
+
+                ClassDeclarationSyntax InsertAfterLastCaseDeclaration(ClassDeclarationSyntax classDeclaration, IEnumerable<MemberDeclarationSyntax> toAdd)
+                {
+                    var members = classDeclaration.Members;
+                    var staticCaseIndex = classDeclaration.Members.LastIndexOf(m =>
+                        m is ClassDeclarationSyntax dec && dec.BaseList?.Types.FirstOrDefault()?.Type.Name() == m_UnionTypeName);
+
+                    return staticCaseIndex < 0
+                        ? InsertAfterLastStaticCase(classDeclaration, toAdd)
+                        : classDeclaration.WithMembers(members.InsertRange(staticCaseIndex + 1, toAdd));
+                }
+
                 if (node.Name() == m_UnionTypeName)
                 {
                     var enumDeclaration = node.DescendantNodes().OfType<EnumDeclarationSyntax>().FirstOrDefault(n => n.Name() == m_NestedEnumTypeName);
                     
                     if (enumDeclaration != null)
                     {
-                        var missingFields = enumDeclaration.Members.Select(e => e.Identifier.ToString())
-                            .Except(node.DescendantNodes().OfType<FieldDeclarationSyntax>().Select(m => m.Declaration.Variables.FirstOrDefault()?.Identifier.ToString()));
-
-                        foreach (var missingField in missingFields)
+                        var caseDeclarationMembers = enumDeclaration.Members.SelectMany(enumMember =>
                         {
-                            var staticField = SyntaxFactory.FieldDeclaration(
+                            // ReSharper disable once AccessToModifiedClosure
+                            var existingCaseDeclaration = node.DescendantNodes().OfType<ClassDeclarationSyntax>()
+                                .FirstOrDefault(n => n.Name() == GetEnumMemberClassName(enumMember.Identifier.ToString()));
+
+                            if (existingCaseDeclaration == null)
+                            {
+                                var enumMemberClassName = GetEnumMemberClassName(enumMember.Identifier.ToString());
+
+                                var caseDeclaration = SyntaxFactory.ClassDeclaration(enumMemberClassName)
+                                    .Public()
+                                    .AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(m_UnionTypeName)))
+                                    .AddMembers(SyntaxFactory.ConstructorDeclaration(enumMemberClassName)
+                                        .WithInitializer(SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                                            .AddArgumentListArguments(SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"{m_NestedEnumTypeName}.{enumMember.Identifier}")))
+                                        )
+                                        .Public()
+                                        .WithBody(SyntaxFactory.Block())
+                                    );
+                                return Option.Some(caseDeclaration);
+                            }
+
+                            return Option.None<ClassDeclarationSyntax>();
+                        });
+
+                        node = InsertAfterLastCaseDeclaration(node, caseDeclarationMembers);
+
+                        var enumMemberNames = enumDeclaration.Members.Select(e => e.Identifier.ToString()).ToList();
+
+                        var staticCaseMembers = enumMemberNames
+                            .Select(enumMember =>
+                        {
+                            // ReSharper disable once AccessToModifiedClosure
+                            var existingCaseDeclaration = node.DescendantNodes().OfType<ClassDeclarationSyntax>()
+                                .First(n => n.Name() == GetEnumMemberClassName(enumMember));
+
+                            var constructorParameters = existingCaseDeclaration
+                                                             .Members.OfType<ConstructorDeclarationSyntax>()
+                                                             .FirstOrDefault()?.ParameterList ?? SyntaxFactory.ParameterList();
+
+                            if (constructorParameters.Parameters.Count > 0)
+                            {
+                                return (MemberDeclarationSyntax)SyntaxFactory.MethodDeclaration(
+                                        SyntaxFactory.ParseTypeName(m_UnionTypeName),
+                                        SyntaxFactory.ParseToken(enumMember))
+                                    .WithParameterList(constructorParameters)
+                                    .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(
+                                        SyntaxFactory.ObjectCreationExpression(
+                                            SyntaxFactory.ParseTypeName(GetEnumMemberClassName(enumMember)),
+                                            SyntaxFactory.ArgumentList(
+                                                new SeparatedSyntaxList<ArgumentSyntax>().AddRange(
+                                                    constructorParameters.Parameters.Select(p =>
+                                                        SyntaxFactory.Argument(SyntaxFactory.ParseExpression(p.Identifier.ToString())))))
+                                            , null)))
+                                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                                    .Public()
+                                    .Static();
+                            }
+
+                            return SyntaxFactory.FieldDeclaration(
                                     SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName(m_UnionTypeName))
-                                        .AddVariables(SyntaxFactory.VariableDeclarator(SyntaxFactory.ParseToken(missingField))
+                                        .AddVariables(SyntaxFactory
+                                            .VariableDeclarator(SyntaxFactory.ParseToken(enumMember))
                                             .WithInitializer(SyntaxFactory.EqualsValueClause(
-                                                SyntaxFactory.ObjectCreationExpression(SyntaxFactory.ParseTypeName(GetEnumMemberClassName(missingField)), SyntaxFactory.ArgumentList(), null)))
+                                                SyntaxFactory.ObjectCreationExpression(
+                                                    SyntaxFactory.ParseTypeName(GetEnumMemberClassName(enumMember)),
+                                                    SyntaxFactory.ArgumentList(), null)))
                                         )
                                 )
                                 .Public()
                                 .Static()
                                 .ReadOnly();
+                        });
 
-                            var members = node.Members;
-                            var index = node.Members.LastIndexOf(m =>
-                                m is FieldDeclarationSyntax && staticField.Modifiers.All(modifier => m.Modifiers.Any(_ => _.ToString() == modifier.ToString())));
-                            node = node.WithMembers(index >= 0
-                                ? members.Insert(index + 1, staticField)
-                                : members.Add(staticField));
-                        }
-
-                        foreach (var enumMember in enumDeclaration.Members)
-                        {
-                            var nestedClass = node.DescendantNodes().OfType<ClassDeclarationSyntax>()
-                                .FirstOrDefault(n => n.Name() == GetEnumMemberClassName(enumMember.Identifier.ToString()));
-                            if (nestedClass == null)
+                        var existingStaticCaseNodes = node.Members
+                            .Where(m =>
                             {
-                                var enumMemberClassName = GetEnumMemberClassName(enumMember.Identifier.ToString());
-                                node = node
-                                    .AddMembers(SyntaxFactory.ClassDeclaration(enumMemberClassName)
-                                        .Public()
-                                        .AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(m_UnionTypeName)))
-                                        .AddMembers(SyntaxFactory.ConstructorDeclaration(enumMemberClassName)
-                                            .WithInitializer(SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                                                .AddArgumentListArguments(SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"{m_NestedEnumTypeName}.{enumMember.Identifier}")))
-                                            )
-                                            .Public()
-                                            .WithBody(SyntaxFactory.Block())
-                                        )
-                                    );
-                            }
-                        }
+                                var name = m is FieldDeclarationSyntax f
+                                    ? f.Declaration.Variables.FirstOrDefault()?.Identifier.ToString()
+                                    : m is MethodDeclarationSyntax me
+                                        ? me.Name()
+                                        : null;
+
+                                return name != null && enumMemberNames.Contains(name);
+                            });
+
+                        node = node.RemoveNodes(existingStaticCaseNodes, SyntaxRemoveOptions.KeepNoTrivia);
+
+                        node = node.WithMembers(node.Members.InsertRange(0, staticCaseMembers));
 
                         return node;
                     }

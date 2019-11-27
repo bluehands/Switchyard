@@ -64,8 +64,8 @@ namespace Switchyard.CodeGeneration
 
         public static ClassDeclarationSyntax AddProperty(this ClassDeclarationSyntax node, string typeName,
             string identifier,
-            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax> mofify = null) =>
-            node.AddMembers(MakeProperty(typeName, identifier, mofify));
+            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax> modify = null) =>
+            node.AddMembers(MakeProperty(typeName, identifier, modify));
 
         public static SyntaxNode AddTypeDeclarationIfNotExists(this SyntaxNode node, string className,
             Func<BaseTypeDeclarationSyntax> createType)
@@ -125,7 +125,8 @@ namespace Switchyard.CodeGeneration
                 .PropertyDeclaration(SyntaxFactory.ParseTypeName(typeName), identifier)
                 .AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
                     .WithSemicolonToken(SyntaxFactory.ParseToken(";")))
-                .Public();
+                .Public()
+                .WithoutTrivia();
             return modify != null ? modify(declarationSyntax) : declarationSyntax;
         }
 
@@ -159,6 +160,11 @@ namespace Switchyard.CodeGeneration
             return classDeclaration;
         }
 
+        public static MethodDeclarationSyntax WithExpressionBody(this MethodDeclarationSyntax member, string statement) =>
+            member
+                .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(SyntaxFactory.ParseExpression(statement)))
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+
         public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate), newClass);
 
         public static TRoot AddOrUpdateClass<TRoot>(this TRoot root, string className,
@@ -184,27 +190,23 @@ namespace Switchyard.CodeGeneration
             {
                 var subNodeToExpand = root.DescendantNodesAndSelf().Select(n =>
                 {
-                    var nameSpace = n as NamespaceDeclarationSyntax;
-                    if (nameSpace != null)
+                    switch (n)
                     {
-                        return new NodeWithMembers(nameSpace, nameSpace.Members, (sn, i, m) =>
-                        {
-                            var ns = (NamespaceDeclarationSyntax)sn;
-                            return ns.WithMembers(ns.Members.Insert(i, m));
-                        });
+                        case NamespaceDeclarationSyntax nameSpace:
+                            return new NodeWithMembers(nameSpace, nameSpace.Members, (sn, i, m) =>
+                            {
+                                var ns = (NamespaceDeclarationSyntax)sn;
+                                return ns.WithMembers(ns.Members.Insert(i, m));
+                            });
+                        case ClassDeclarationSyntax clazz:
+                            return new NodeWithMembers(clazz, clazz.Members, (cn, i, m) =>
+                            {
+                                var ns = (ClassDeclarationSyntax)cn;
+                                return ns.WithMembers(ns.Members.Insert(i, m));
+                            });
+                        default:
+                            return null;
                     }
-
-                    var clazz = n as ClassDeclarationSyntax;
-                    if (clazz != null)
-                    {
-                        return new NodeWithMembers(clazz, clazz.Members, (cn, i, m) =>
-                        {
-                            var ns = (ClassDeclarationSyntax)cn;
-                            return ns.WithMembers(ns.Members.Insert(i, m));
-                        });
-                    }
-
-                    return null;
                 }).FirstOrDefault(_ => _ != null);
 
                 if (subNodeToExpand != null)

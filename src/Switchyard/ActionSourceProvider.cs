@@ -50,7 +50,7 @@ namespace Switchyard
         public IEnumerable<SuggestedActionSet> GetSuggestedActions(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
         {
             var document = range.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
-            if(document == null)
+            if (document == null)
                 yield break;
 
             var enumDeclaration = EnumToClassAction.GetEnumDeclarationIfInRange(range, cancellationToken).GetAwaiter().GetResult();
@@ -208,9 +208,20 @@ namespace Switchyard
             {
                 foreach (var node in token.Parent.AncestorsAndSelf())
                 {
-                    if (node is EnumDeclarationSyntax enumDeclaration)
+                    switch (node)
                     {
-                        return enumDeclaration;
+                        case EnumDeclarationSyntax enumDeclaration:
+                            return enumDeclaration;
+
+                        case ClassDeclarationSyntax classDeclaration:
+                            {
+                                var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
+                                    .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
+
+                                if (enumDeclaration != null)
+                                    return enumDeclaration;
+                                break;
+                            }
                     }
                 }
             }
