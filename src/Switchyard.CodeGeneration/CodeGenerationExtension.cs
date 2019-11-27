@@ -21,14 +21,20 @@ namespace Switchyard.CodeGeneration
             return visitor.Visit(node);
         }
 
-        public static T AssertModifier<T>(this T syntax, SyntaxKind modifier) where T : MemberDeclarationSyntax
+        public static T AssertModifier<T>(this T syntax, SyntaxKind modifier, params SyntaxKind[] toRemove) where T : MemberDeclarationSyntax
         {
             var token = SyntaxFactory.Token(modifier);
-            return (T) (syntax.Modifiers.Any(m => m.ToString() == token.ToString()) ? syntax : syntax.AddModifiers(token));
+            var modifiers = toRemove
+                .Select(SyntaxFactory.Token).Concat(new []{ token })
+                .SelectMany(r => syntax.Modifiers.Where(t => t.Text.ToString() == r.Text.ToString()))
+                .Aggregate(syntax.Modifiers, (tokenList, remove) => tokenList.Remove(remove));
+
+            return (T) syntax.WithModifiers(modifiers.Add(token));
         }
 
-        public static T Public<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.PublicKeyword);
-        public static T Protected<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.ProtectedKeyword);
+        public static T Public<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.PublicKeyword, SyntaxKind.InternalKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.ProtectedKeyword);
+        public static T Protected<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.ProtectedKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.PublicKeyword);
+        public static T Internal<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.InternalKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.PublicKeyword);
         public static T Static<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.StaticKeyword);
 
         public static T ReadOnly<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.ReadOnlyKeyword);
