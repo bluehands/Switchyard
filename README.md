@@ -33,8 +33,6 @@ public class SFtpConfig
 
 /// ......
 
-/// ......
-
 public class Consumer
 {
 	public void Connect(SFtpConfig config)
@@ -61,7 +59,7 @@ public class Consumer
 
 Problem with the config class is that every consumer has to switch on the `ConnectionType` property and than guess which properties on SFtpConfig are relevant in his case. First problem here, the guess could be wrong and types of all 'eventual properties' on SFtpConfig have to allow empty or null values. Second problem is common to all enums: An extension of the enum won't be visible to consumers at compile time. So a third option introduced might lead to ArgumentOutOfRange exceptions at runtime.
 
-One solution to the problem is so called union types or discriminated unions, basically types that can be on thing or an other. Those types are supported natively in F# an other functional languages. In C# they have to be implemented by hand, and that is where the refactoring comes in.
+One solution to the problem is so called union types or discriminated unions, basically types that can be one thing or an other. Those types are supported natively in F# an other functional languages. In C# they have to be implemented by hand, and that is where the refactoring comes in.
 
 Start with an enum like that:
 
@@ -104,7 +102,7 @@ public abstract class SFtpConfig
 
 ```
 
-One can can add properties to the union case classes and intialize them from the constructs. Just run the refactoring again and static initializers will be adapted accordingly:
+One can can add properties to the union case classes and intialize them from constructor parameters. Just run the refactoring again and static initializers will be adapted accordingly:
 
 ```csharp
 
@@ -160,6 +158,13 @@ public class Consumer
 }
 ```
 
+To add a case to the union just add another entry to the UnionCases nested enum and reapply the refactoring.
+
+### Generate state machine from dot file
+
+Add a dot file containing a directed graph to a project and put a cs file named like the dot file next to it. In the cs file the 'Generate state machine from .dot' will show up. Executing it will produce classes representing the state machine. It's an immutable state machine, so firing a trigger on it will return the class representing the current state leaving the source instance untouched. Properties can be added to the Trigger classes and reapplying the refactoring will adapt corresponding method calls accordingly. Custom code in state and trigger classes is respected and will not be overriden, so the refactoring can be reapplied safly while extending the state machine.
+
+... TODO: example
 
 
 
