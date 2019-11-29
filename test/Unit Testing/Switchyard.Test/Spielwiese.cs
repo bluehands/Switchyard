@@ -39,7 +39,7 @@ namespace StateMachineGenerator.Test
 
         public override int GetHashCode() => (int)Id;
 
-        public static readonly Test One = new One_();
+        public static Test One() => new One_();
         public static readonly Test Two = new Two_();
         public class One_ : Test
         {
