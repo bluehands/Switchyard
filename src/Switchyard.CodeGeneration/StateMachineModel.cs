@@ -11,8 +11,8 @@ namespace Switchyard.CodeGeneration
         public const string StatePropertyName = "State";
         public const string TriggerPropertyName = "Trigger";
         public const string ParametersParameterName = "parameters";
-        public const string NestedEnumTypeName = "Ids";
-        public const string EnumPropertyName = "Id";
+        public const string NestedEnumTypeName = WrapEnumToClass.DefaultNestedEnumTypeName;
+        public const string EnumPropertyName = WrapEnumToClass.DefaultEnumPropertyName;
         public const string ApplyMethodName = "Apply";
         public const string DoTransitionMethodName = "DoTransition";
         public const string MatchMethodName = "Match";
