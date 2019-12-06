@@ -299,7 +299,7 @@ namespace Switchyard.CodeGeneration
 
             var newMembers = index >= 0 ? members.Insert(index + 1, m_Member) : members.Add(m_Member);
 
-            return node.WithMembers(newMembers).NormalizeWhitespace();
+            return node.WithMembers(newMembers);
         }
     }
 }

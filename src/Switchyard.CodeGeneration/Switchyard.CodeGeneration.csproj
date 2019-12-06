@@ -231,6 +231,7 @@
     <Compile Include="StringExtension.cs" />
     <Compile Include="SvgExport.cs" />
     <Compile Include="UnionTypeCodeProvider.cs" />
+    <Compile Include="WhitespaceFormatter.cs" />
     <Compile Include="WorkspaceExtension.cs" />
     <Compile Include="WrapEnumToClass.cs" />
   </ItemGroup>
