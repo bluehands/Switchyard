@@ -3,6 +3,8 @@ Roslyn based refactorings for Visual Studio to support functional constructs in 
 
 ## Refactorings
 
+**HINT:** If you have *ReSharper* installed configure it to show or integrate VisualStudio light bulb actions. Settings can be found under Extensions->ReSharper->Options->Environment->Editor->Visual Studio Features->Visual Studio code analysis.
+
 ### Expand enum to union type
 
 Imagine classes representing an ftp connection configuration like that:
