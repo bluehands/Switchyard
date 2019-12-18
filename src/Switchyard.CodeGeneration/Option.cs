@@ -98,12 +98,12 @@ namespace Switchyard.CodeGeneration
 
         public T GetValueOrDefault(Func<T> defaultValue = null)
         {
-            return Match(v => v, () => defaultValue != null ? defaultValue() : default(T));
+            return Match(v => v, () => defaultValue != null ? defaultValue() : default);
         }
 
         public T1 GetValueOrDefault<T1>(Func<T, T1> getValue, Func<T1> defaultValue = null)
         {
-            return Match(getValue, () => defaultValue != null ? defaultValue() : default(T1));
+            return Match(getValue, () => defaultValue != null ? defaultValue() : default);
         }
 
         public bool IsNone() => !IsSome();
@@ -190,7 +190,7 @@ namespace Switchyard.CodeGeneration
             return () =>
             {
                 action();
-                return default(T);
+                return default;
             };
         }
 
@@ -208,7 +208,7 @@ namespace Switchyard.CodeGeneration
             return async () =>
             {
                 await action().ConfigureAwait(false);
-                return default(T);
+                return default;
             };
         }
 

@@ -218,7 +218,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Switchyard.CodeGeneration\Switchyard.CodeGeneration.csproj">
       <Project>{84FD7746-0915-40B5-9886-65BDCED56466}</Project>
-      <Name>FluentApiGenerator.CodeGeneration</Name>
+      <Name>Switchyard.CodeGeneration</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

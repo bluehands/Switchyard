@@ -14,8 +14,10 @@ using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.Text.Operations;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
 using Switchyard.CodeGeneration;
+using Task = System.Threading.Tasks.Task;
 
 namespace Switchyard
 {
@@ -26,8 +28,7 @@ namespace Switchyard
     {
         readonly Workspace m_Workspace;
 
-        [Import(typeof(ITextStructureNavigatorSelectorService))]
-        internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
+        [Import(typeof(ITextStructureNavigatorSelectorService))] internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
         [ImportingConstructor]
         public ActionsSourceProvider([Import(typeof(VisualStudioWorkspace), AllowDefault = true)] Workspace workspace) => m_Workspace = workspace;
@@ -41,7 +42,9 @@ namespace Switchyard
 
         public ActionSource(Workspace workspace) => m_Workspace = workspace;
 
+#pragma warning disable CS0067
         public event EventHandler<EventArgs> SuggestedActionsChanged;
+#pragma warning restore CS0067
 
         public void Dispose()
         {
@@ -53,7 +56,7 @@ namespace Switchyard
             if (document == null)
                 yield break;
 
-            var enumDeclaration = EnumToClassAction.GetEnumDeclarationIfInRange(range, cancellationToken).GetAwaiter().GetResult();
+            var enumDeclaration = ThreadHelper.JoinableTaskFactory.Run(() => EnumToClassAction.GetEnumDeclarationIfInRange(range, cancellationToken));
             if (enumDeclaration != null)
             {
                 yield return new SuggestedActionSet("Any", new[] { new EnumToClassAction(enumDeclaration, new UnionTypeCodeProvider(m_Workspace), document) });
@@ -78,7 +81,7 @@ namespace Switchyard
 
         public bool TryGetTelemetryId(out Guid telemetryId)
         {
-            telemetryId = default(Guid);
+            telemetryId = default;
             return false;
         }
     }
@@ -118,7 +121,7 @@ namespace Switchyard
         public string IconAutomationText => string.Empty;
         public string InputGestureText => string.Empty;
         public bool HasPreview => false;
-        ImageMoniker ISuggestedAction.IconMoniker => default(ImageMoniker);
+        ImageMoniker ISuggestedAction.IconMoniker => default;
 
         public void Dispose()
         {
@@ -133,12 +136,12 @@ namespace Switchyard
 
         public void Invoke(CancellationToken cancellationToken)
         {
-            m_CodeProvider.GenerateStateMachine(m_Document, m_DotFileName, cancellationToken).GetAwaiter().GetResult();
+            ThreadHelper.JoinableTaskFactory.Run(() => m_CodeProvider.GenerateStateMachine(m_Document, m_DotFileName, cancellationToken));
         }
 
         public bool TryGetTelemetryId(out Guid telemetryId)
         {
-            telemetryId = default(Guid);
+            telemetryId = default;
             return false;
         }
 
@@ -166,7 +169,7 @@ namespace Switchyard
         public string IconAutomationText => string.Empty;
         public string InputGestureText => string.Empty;
         public bool HasPreview => false;
-        ImageMoniker ISuggestedAction.IconMoniker => default(ImageMoniker);
+        ImageMoniker ISuggestedAction.IconMoniker => default;
 
         public void Dispose()
         {
@@ -181,12 +184,12 @@ namespace Switchyard
 
         public void Invoke(CancellationToken cancellationToken)
         {
-            m_CodeProvider.EnumToClass(m_Document, m_EnumDeclaration, cancellationToken).GetAwaiter().GetResult();
+            ThreadHelper.JoinableTaskFactory.Run(() => m_CodeProvider.EnumToClass(m_Document, m_EnumDeclaration, cancellationToken));
         }
 
         public bool TryGetTelemetryId(out Guid telemetryId)
         {
-            telemetryId = default(Guid);
+            telemetryId = default;
             return false;
         }
 

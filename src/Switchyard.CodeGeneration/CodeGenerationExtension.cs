@@ -160,17 +160,18 @@ namespace Switchyard.CodeGeneration
             return classDeclaration;
         }
 
-        public static MethodDeclarationSyntax WithExpressionBody(this MethodDeclarationSyntax member, string statement) =>
-            member
+        public static T WithExpressionBody<T>(this T declaration, string statement) where T : BaseMethodDeclarationSyntax =>
+            (T)declaration
                 .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(SyntaxFactory.ParseExpression(statement)))
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+
 
         public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate), newClass);
 
         public static TRoot AddOrUpdateClass<TRoot>(this TRoot root, string className,
-            Func<ClassDeclarationSyntax, ClassDeclarationSyntax> intialUpdateNode, Func<ClassDeclarationSyntax, ClassDeclarationSyntax> updateNode) where TRoot : SyntaxNode
+            Func<ClassDeclarationSyntax, ClassDeclarationSyntax> initialUpdateNode, Func<ClassDeclarationSyntax, ClassDeclarationSyntax> updateNode) where TRoot : SyntaxNode
         {
-            return root.AddOrUpdateNode(c => c.Name() == className, () => intialUpdateNode(SyntaxFactory.ClassDeclaration(className)), updateNode);
+            return root.AddOrUpdateNode(c => c.Name() == className, () => initialUpdateNode(SyntaxFactory.ClassDeclaration(className)), updateNode);
         }
 
         public static TRoot AddOrUpdateNode<TRoot, TOrig>(this TRoot root, Func<TOrig, bool> predicate,
