@@ -1,9 +1,9 @@
 # Switchyard
 Roslyn based refactorings for Visual Studio to support functional constructs in C# with less effort
 
-## Refactorings
-
 **HINT:** If you have *ReSharper* installed configure it to show or integrate VisualStudio light bulb actions. Settings can be found under Extensions->ReSharper->Options->Environment->Editor->Visual Studio Features->Visual Studio code analysis.
+
+## Refactorings
 
 ### Expand enum to union type
 
@@ -72,7 +72,7 @@ public enum SFtpConfig
 }
 ```
 
-As soon as the cursor is inside of an enum declaration, light bulb action 'Expand enum to untion type' is offered, which will change the enum declaration to the following code (equality and internal members ommitted):
+As soon as the cursor is inside of an enum declaration, light bulb action 'Expand enum to untion type' is offered, which will change the enum declaration to the following code (equality and internal members omitted):
 
 ```csharp
 
@@ -139,7 +139,7 @@ public abstract class SFtpConfig
 // match helper ....
 ```
 
-All code added to the types is left untouched by the refactoring so it can be reapplied safly.
+All code added to the types is left untouched by the refactoring so it can be reapplied safely.
 
 With that our SFtpClient can now be implemented in more 'type safe' manner:
 
@@ -160,13 +160,13 @@ public class SFtpClient
 }
 ```
 
-Users of your api are guided to correct usage by explicitly persented choices and types without eventual properties. If you ever add a third authentication method to your SFtpConfig union type all code consuming it will break at compile time.
+Users of your api are guided to correct usage by explicitly presented choices and types without eventual properties. If you ever add a third authentication method to your SFtpConfig union type all code consuming it will break at compile time.
 
 To add a case to the union just add another entry to the UnionCases nested enum and reapply the refactoring.
 
 ### Generate state machine from dot file
 
-Add a dot file containing a directed graph to a project and put a cs file named like the dot file next to it. In the cs file the 'Generate state machine from .dot' will show up. Executing it will produce classes representing the state machine. It's an immutable state machine, so firing a trigger on it will return the class representing the current state leaving the source instance untouched. Properties can be added to the Trigger classes and reapplying the refactoring will adapt corresponding method calls accordingly. Custom code in state and trigger classes is respected and will not be overriden, so the refactoring can be reapplied safly while extending the state machine.
+Add a dot file containing a directed graph to a project and put a cs file named like the dot file next to it. In the cs file the 'Generate state machine from .dot' will show up. Executing it will produce classes representing the state machine. It's an immutable state machine, so firing a trigger on it will return the class representing the current state leaving the source instance untouched. Properties can be added to the Trigger classes and reapplying the refactoring will adapt corresponding method calls accordingly. Custom code in state and trigger classes is respected and will not be overriden, so the refactoring can be reapplied safely while extending the state machine.
 
 ... TODO: example
 
