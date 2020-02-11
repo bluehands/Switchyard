@@ -103,17 +103,14 @@ namespace Switchyard.CodeGeneration
         {
             return MatchMethodDeclaration($"Task<{baseTypeName}>", baseTypeParameterName, derivedTypes, "Task<T>")
                 .Async()
-                .WithBody(SyntaxFactory.Block().AddStatements(
-                    SyntaxFactory.ParseStatement($"return await (await {baseTypeParameterName}.ConfigureAwait(false)).Match({String.Join(",", derivedTypes.Select(d => d.ParameterName))}).ConfigureAwait(false);")));
-
+                .WithExpressionBody($"await (await {baseTypeParameterName}.ConfigureAwait(false)).Match({string.Join(",", derivedTypes.Select(d => d.ParameterName))}).ConfigureAwait(false)");
         }
 
         public static MethodDeclarationSyntax GenerateFuncAsyncSync(string baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes)
         {
             return MatchMethodDeclaration($"Task<{baseTypeName}>", baseTypeParameterName, derivedTypes, "Task<T>", "T")
                 .Async()
-                .WithBody(SyntaxFactory.Block().AddStatements(
-                    SyntaxFactory.ParseStatement($"return (await {baseTypeParameterName}.ConfigureAwait(false)).Match({String.Join(",", derivedTypes.Select(d => d.ParameterName))});")));
+                .WithExpressionBody($"(await {baseTypeParameterName}.ConfigureAwait(false)).Match({string.Join(",", derivedTypes.Select(d => d.ParameterName))})");
         }
 
         public static MethodDeclarationSyntax GenerateFuncSync(string baseTypeName, string baseTypeParameterName,

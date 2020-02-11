@@ -35,7 +35,7 @@ namespace Switchyard.CodeGeneration
         public static T Public<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.PublicKeyword, SyntaxKind.InternalKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.ProtectedKeyword);
         public static T Protected<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.ProtectedKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.PublicKeyword);
         public static T Internal<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.InternalKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.PublicKeyword);
-        public static T Static<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.StaticKeyword);
+        public static T Static<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.StaticKeyword, SyntaxKind.AbstractKeyword);
 
         public static T ReadOnly<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.ReadOnlyKeyword);
         public static T Abstract<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.AbstractKeyword);

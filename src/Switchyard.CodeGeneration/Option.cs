@@ -29,7 +29,7 @@ namespace Switchyard.CodeGeneration
 
         public Option<T1> Convert<T1>(Func<T, Option<T1>> some) => Match(some, None<T1>);
 
-        public void Match(Action<T> some, System.Action none = null)
+        public void Match(Action<T> some, Action none = null)
         {
             Match(some.ToFunc(), none?.ToFunc<int>() ?? (() => 42));
         }
@@ -180,12 +180,12 @@ namespace Switchyard.CodeGeneration
             return t => { func(t); };
         }
 
-        public static System.Action IgnoreReturn<T>(this Func<T> func)
+        public static Action IgnoreReturn<T>(this Func<T> func)
         {
             return () => { func(); };
         }
 
-        public static Func<T> ToFunc<T>(this System.Action action)
+        public static Func<T> ToFunc<T>(this Action action)
         {
             return () =>
             {
