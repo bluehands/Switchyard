@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
@@ -7,91 +6,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Switchyard.CodeGeneration;
 namespace StateMachineGenerator.Test
 {
-    abstract class Test
-    {
-        public static readonly Test One = new One_();
-        public static readonly Test Two = new Two_();
-
-        public class One_ : Test
-        {
-            public One_() : base(UnionCases.One)
-            {
-            }
-        }
-
-        public class Two_ : Test
-        {
-            public Two_() : base(UnionCases.Two)
-            {
-            }
-        }
-
-        internal enum UnionCases
-        {
-            One,
-            Two
-        }
-
-        internal UnionCases UnionCase { get; }
-        Test
-(UnionCases unionCase)
-        {
-            UnionCase = unionCase;
-        }
-
-        public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
-        bool Equals(Test other) => UnionCase == other.UnionCase;
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != GetType()) return false;
-            return Equals((Test)obj);
-        }
-
-        public override int GetHashCode() => (int)UnionCase;
-    }
-
-    static class TestExtension
-    {
-        public static T Match<T>(this Test test, Func<Test.One_, T> one, Func<Test.Two_, T> two)
-        {
-            switch (test.UnionCase)
-            {
-                case Test.UnionCases.One:
-                    return one((Test.One_)test);
-                case Test.UnionCases.Two:
-                    return two((Test.Two_)test);
-                default:
-                    throw new ArgumentException($"Unknown type implementing Test: {test.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Test test, Func<Test.One_, Task<T>> one, Func<Test.Two_, Task<T>> two)
-        {
-            switch (test.UnionCase)
-            {
-                case Test.UnionCases.One:
-                    return await one((Test.One_)test).ConfigureAwait(false);
-                case Test.UnionCases.Two:
-                    return await two((Test.Two_)test).ConfigureAwait(false);
-                default:
-                    throw new ArgumentException($"Unknown type implementing Test: {test.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Task<Test> test, Func<Test.One_, T> one, Func<Test.Two_, T> two)
-        {
-            return (await test.ConfigureAwait(false)).Match(one, two);
-        }
-
-        public static async Task<T> Match<T>(this Task<Test> test, Func<Test.One_, Task<T>> one, Func<Test.Two_, Task<T>> two)
-        {
-            return await(await test.ConfigureAwait(false)).Match(one, two).ConfigureAwait(false);
-        }
-    }
-
     [TestClass]
     public class Spiel
     {

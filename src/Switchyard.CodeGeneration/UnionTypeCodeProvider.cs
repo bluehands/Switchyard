@@ -3,9 +3,11 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using MoreLinq;
 
 namespace Switchyard.CodeGeneration
 {
@@ -67,13 +69,13 @@ namespace Switchyard.CodeGeneration
         }
     }
 
-    public class UnionTypeOccurence
+    public class UnionTypeOccurrence
     {
         public UnionTypeModel Model { get; }
         public Option<ClassDeclarationSyntax> AbstractBaseType { get; }
         public ImmutableArray<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
 
-        public UnionTypeOccurence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
+        public UnionTypeOccurrence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
         {
             Model = model;
             AbstractBaseType = abstractBaseType;
@@ -114,6 +116,29 @@ namespace Switchyard.CodeGeneration
                     Type = type;
                 }
             }
+        }
+    }
+
+    public class ImmutableHelpersCodeProvider
+    {
+        readonly Workspace m_Workspace;
+
+        public ImmutableHelpersCodeProvider(Workspace workspace) => m_Workspace = workspace;
+
+        public async Task GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
+        {
+            var constructors = classDeclaration
+                .Members
+                .OfType<ConstructorDeclarationSyntax>()
+                .ToImmutableArray();
+
+            if (!constructors.Any())
+                return;
+
+            var constructor = constructors
+                .MaxBy(c => c.ParameterList.Parameters.Count);
+
+
         }
     }
 }
