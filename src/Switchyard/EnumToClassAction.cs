@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Text;
 using Switchyard.CodeGeneration;
 using Task = System.Threading.Tasks.Task;
 
@@ -59,30 +57,23 @@ namespace Switchyard
             return false;
         }
 
-        public static async Task<bool> HasSuggestedActions(ISuggestedActionCategorySet requestedActionCategories,
-            SnapshotSpan range, CancellationToken cancellationToken) =>
-            await GetEnumDeclarationIfInRange(range, cancellationToken).ConfigureAwait(false) != null;
+        public static bool HasSuggestedActions(Option<SyntaxToken> range) =>
+             GetEnumDeclarationIfInRange(range) != null;
 
-        public static async Task<EnumDeclarationSyntax> GetEnumDeclarationIfInRange(SnapshotSpan range, CancellationToken cancellationToken)
+        public static EnumDeclarationSyntax GetEnumDeclarationIfInRange(Option<SyntaxToken> token)
         {
-            var document = range.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
-            if (document == null)
-                return null;
-
-            if (!document.TryGetSyntaxTree(out var syntaxTree))
-                return null;
-
-            var token = (await syntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false)).FindToken(range.Start);
-            if (token.Parent != null)
+            return token.Bind(t =>
             {
-                foreach (var node in token.Parent.AncestorsAndSelf())
+                if (t.Parent != null)
                 {
-                    switch (node)
+                    foreach (var node in t.Parent.AncestorsAndSelf())
                     {
-                        case EnumDeclarationSyntax enumDeclaration:
-                            return enumDeclaration;
+                        switch (node)
+                        {
+                            case EnumDeclarationSyntax enumDeclaration:
+                                return enumDeclaration;
 
-                        case ClassDeclarationSyntax classDeclaration:
+                            case ClassDeclarationSyntax classDeclaration:
                             {
                                 var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
                                     .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
@@ -91,11 +82,12 @@ namespace Switchyard
                                     return enumDeclaration;
                                 break;
                             }
+                        }
                     }
                 }
-            }
 
-            return null;
+                return Option<EnumDeclarationSyntax>.None;
+            }).GetValueOrDefault();
         }
     }
 }

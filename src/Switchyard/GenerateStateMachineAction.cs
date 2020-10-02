@@ -56,8 +56,6 @@ namespace Switchyard
             return false;
         }
 
-        public static Task<bool> HasSuggestedActions(ISuggestedActionCategorySet requestedActionCategories,
-            SnapshotSpan range, CancellationToken cancellationToken) =>
-            Task.FromResult(range.TryGetDotFilename().IsSome());
+        public static bool HasSuggestedActions(SnapshotSpan range) => range.TryGetDotFilename().IsSome();
     }
 }

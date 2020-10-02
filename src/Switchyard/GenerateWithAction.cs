@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
@@ -22,14 +22,15 @@ namespace Switchyard
         readonly Document m_Document;
         readonly ImmutableHelpersCodeProvider m_CodeProvider;
 
-        public GenerateWithAction(ClassDeclarationSyntax classDeclaration, Document document)
+        public GenerateWithAction(ClassDeclarationSyntax classDeclaration, ImmutableHelpersCodeProvider codeProvider, Document document)
         {
             m_ClassDeclaration = classDeclaration;
             m_Document = document;
+            m_CodeProvider = codeProvider;
         }
 
         public bool HasActionSets => false;
-        public string DisplayText => "Generate 'With' Extension";
+        public string DisplayText => "Generate 'With' extension";
         public object IconMoniker => string.Empty;
         public string IconAutomationText => string.Empty;
         public string InputGestureText => string.Empty;
@@ -58,33 +59,25 @@ namespace Switchyard
             return false;
         }
 
-        public static async Task<bool> HasSuggestedActions(ISuggestedActionCategorySet requestedActionCategories,
-            SnapshotSpan range, CancellationToken cancellationToken) =>
-            await GetClassDeclarationIfInRange(range, cancellationToken).ConfigureAwait(false) != null;
+        public static bool HasSuggestedActions(
+            Option<SyntaxToken> token) => GetClassDeclarationIfInRange(token) != null;
 
-        public static async Task<ClassDeclarationSyntax> GetClassDeclarationIfInRange(SnapshotSpan range, CancellationToken cancellationToken)
-        {
-            var document = range.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
-            if (document == null)
-                return null;
-
-            if (!document.TryGetSyntaxTree(out var syntaxTree))
-                return null;
-
-            var token = (await syntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false)).FindToken(range.Start);
-            if (token.Parent != null)
+        public static ClassDeclarationSyntax GetClassDeclarationIfInRange(Option<SyntaxToken> token) =>
+            token.Bind(t =>
             {
-                foreach (var node in token.Parent.AncestorsAndSelf())
+                if (t.Parent != null)
                 {
-                    switch (node)
+                    foreach (var node in t.Parent.AncestorsAndSelf())
                     {
-                        case ClassDeclarationSyntax classDeclaration:
-                            return classDeclaration;
+                        switch (node)
+                        {
+                            case ClassDeclarationSyntax classDeclaration:
+                                return classDeclaration;
+                        }
                     }
                 }
-            }
 
-            return null;
-        }
+                return Option<ClassDeclarationSyntax>.None;
+            }).GetValueOrDefault();
     }
 }

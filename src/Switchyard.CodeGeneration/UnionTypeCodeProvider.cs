@@ -7,7 +7,6 @@ using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using MoreLinq;
 
 namespace Switchyard.CodeGeneration
 {
@@ -119,26 +118,8 @@ namespace Switchyard.CodeGeneration
         }
     }
 
-    public class ImmutableHelpersCodeProvider
+    public static class Types
     {
-        readonly Workspace m_Workspace;
-
-        public ImmutableHelpersCodeProvider(Workspace workspace) => m_Workspace = workspace;
-
-        public async Task GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
-        {
-            var constructors = classDeclaration
-                .Members
-                .OfType<ConstructorDeclarationSyntax>()
-                .ToImmutableArray();
-
-            if (!constructors.Any())
-                return;
-
-            var constructor = constructors
-                .MaxBy(c => c.ParameterList.Parameters.Count);
-
-
-        }
+        public static TypeSyntax String = SyntaxFactory.ParseTypeName("string");
     }
 }

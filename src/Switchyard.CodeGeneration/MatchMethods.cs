@@ -147,7 +147,7 @@ namespace Switchyard.CodeGeneration
                 .WithParameterList(SyntaxFactory.ParameterList()
                     .AddParameters(
                         SyntaxFactory.Parameter(SyntaxFactory.ParseToken(baseTypeParameterName))
-                            .WithModifiers(SyntaxTokenList.Create(SyntaxFactory.Token(SyntaxKind.ThisKeyword)))
+                            .AddThis()
                             .WithType(SyntaxFactory.ParseTypeName(baseTypeName)))
                     .AddParameters(derivedTypes.Select(v =>
                         SyntaxFactory.Parameter(SyntaxFactory.ParseToken(v.ParameterName))

@@ -16,7 +16,6 @@ using Microsoft.VisualStudio.Text.Operations;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;
 using Switchyard.CodeGeneration;
-using Task = System.Threading.Tasks.Task;
 
 namespace Switchyard
 {
@@ -55,10 +54,18 @@ namespace Switchyard
             if (document == null)
                 yield break;
 
-            var enumDeclaration = ThreadHelper.JoinableTaskFactory.Run(() => EnumToClassAction.GetEnumDeclarationIfInRange(range, cancellationToken));
+            var token = ThreadHelper.JoinableTaskFactory.Run(() => range.GetSyntaxTokenAtRangeStart(cancellationToken));
+
+            var enumDeclaration = EnumToClassAction.GetEnumDeclarationIfInRange(token);
             if (enumDeclaration != null)
             {
                 yield return new SuggestedActionSet("Any", new[] { new EnumToClassAction(enumDeclaration, new UnionTypeCodeProvider(m_Workspace), document) });
+            }
+
+            var classDeclaration = GenerateWithAction.GetClassDeclarationIfInRange(token);
+            if (classDeclaration != null)
+            {
+                yield return new SuggestedActionSet("Any", new[] { new GenerateWithAction(classDeclaration, new ImmutableHelpersCodeProvider(m_Workspace), document) });
             }
 
             var dotFileName = range.TryGetDotFilename();
@@ -71,11 +78,12 @@ namespace Switchyard
 
         public async Task<bool> HasSuggestedActionsAsync(ISuggestedActionCategorySet requestedActionCategories, SnapshotSpan range, CancellationToken cancellationToken)
         {
-            var hasActionResults = await Task.WhenAll(
-                GenerateStateMachineAction.HasSuggestedActions(requestedActionCategories, range, cancellationToken),
-                EnumToClassAction.HasSuggestedActions(requestedActionCategories, range, cancellationToken)
-                ).ConfigureAwait(false);
-            return hasActionResults.Any();
+            var token = await range.GetSyntaxTokenAtRangeStart(cancellationToken).ConfigureAwait(false);
+
+            return EnumToClassAction.HasSuggestedActions(token)
+                   || GenerateWithAction.HasSuggestedActions(token)
+                   || GenerateStateMachineAction.HasSuggestedActions(range);
+
         }
 
         public bool TryGetTelemetryId(out Guid telemetryId)
@@ -98,6 +106,21 @@ namespace Switchyard
             var dotFilePath = Path.ChangeExtension(document.FilePath, "dot");
             var dotFileFound = File.Exists(dotFilePath);
             return dotFileFound ? dotFilePath : Option<string>.None;
+        }
+
+        public static async Task<Option<SyntaxToken>> GetSyntaxTokenAtRangeStart(this SnapshotSpan range, CancellationToken cancellationToken)
+        {
+            var document = range.Snapshot.TextBuffer.GetRelatedDocuments().FirstOrDefault();
+            var token = Option.None<SyntaxToken>();
+            if (document != null)
+            {
+                if (document.TryGetSyntaxTree(out var syntaxTree))
+                {
+                    token = (await syntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false)).FindToken(range.Start);
+                }
+            }
+
+            return token;
         }
     }
 }

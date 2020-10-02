@@ -164,6 +164,49 @@ Users of your api are guided to correct usage by explicitly presented choices an
 
 To add a case to the union just add another entry to the UnionCases nested enum and reapply the refactoring.
 
+### Generate 'With' extension
+
+Generate an extension method for an immutable type to easly create copies of that type with specific properties changed. The extension is inspired by F#s with operator. For this to work you need an Option class (for example from [FunicluarSwitch](https://www.nuget.org/packages/FunicularSwitch/) package) and a construtor that initializes the objects (read only) properties:
+
+```csharp
+public class MyImmutableObject
+{
+    public int Number { get; }
+    public bool IsActive { get; }
+    public string Name { get; }
+
+    public MyImmutableObject(int number, bool isActive, string name)
+    {
+        Number = number;
+        IsActive = isActive;
+        Name = name;
+    }
+}
+```
+
+Place the cusor somewhere inside the class an run the *Generate 'With' extension* refactoring. An extension class for your object is added:
+```csharp
+public static class MyImmutableObjectWithExtension
+{
+    public static MyImmutableObject With(this MyImmutableObject myImmutableObject, Option<int> number = null, Option<bool> isActive = null, Option<string> name = null) => 
+        new MyImmutableObject(
+            number: number != null ? number.Match(x => x, () => myImmutableObject.Number) : myImmutableObject.Number, 
+            isActive: isActive != null ? isActive.Match(x => x, () => myImmutableObject.IsActive) : myImmutableObject.IsActive, 
+            name: name != null ? name.Match(x => x, () => myImmutableObject.Name) : myImmutableObject.Name
+        );
+}
+```
+
+that can be used like that:
+
+```csharp
+var bruno = new MyImmutableObject(42, true, "Bruno");
+var brunoInactivated = bruno.With(isActive: false);
+```
+
+If your type changes just rerun the refactoring and your extension will be replaced with the updated implementation.
+
+
 ### Generate state machine from dot file
 
 Add a dot file containing a directed graph to a project and put a cs file named like the dot file next to it. In the cs file the 'Generate state machine from .dot' will show up. Executing it will produce classes representing the state machine. It's an immutable state machine, so firing a trigger on it will return the class representing the current state leaving the source instance untouched. Properties can be added to the Trigger classes and reapplying the refactoring will adapt corresponding method calls accordingly. Custom code in state and trigger classes is respected and will not be overriden, so the refactoring can be reapplied safely while extending the state machine.
