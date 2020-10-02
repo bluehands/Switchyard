@@ -3,6 +3,7 @@ using System.Collections.Immutable;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -67,13 +68,13 @@ namespace Switchyard.CodeGeneration
         }
     }
 
-    public class UnionTypeOccurence
+    public class UnionTypeOccurrence
     {
         public UnionTypeModel Model { get; }
         public Option<ClassDeclarationSyntax> AbstractBaseType { get; }
         public ImmutableArray<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
 
-        public UnionTypeOccurence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
+        public UnionTypeOccurrence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
         {
             Model = model;
             AbstractBaseType = abstractBaseType;
@@ -115,5 +116,10 @@ namespace Switchyard.CodeGeneration
                 }
             }
         }
+    }
+
+    public static class Types
+    {
+        public static TypeSyntax String = SyntaxFactory.ParseTypeName("string");
     }
 }

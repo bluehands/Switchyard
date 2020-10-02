@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.Linq;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -165,6 +166,15 @@ namespace Switchyard.CodeGeneration
                 .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(SyntaxFactory.ParseExpression(statement)))
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 
+
+        public static MemberDeclarationSyntax WithParameters(this MethodDeclarationSyntax method,
+            params (string type, string name)[] parameters)
+            => method.AddParameterListParameters(parameters.Select(p =>
+                SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.name))
+                    .WithType(SyntaxFactory.ParseTypeName(p.type))).ToArray());
+
+        public static ParameterSyntax AddThis(this ParameterSyntax parameter)
+            => parameter.WithModifiers(SyntaxTokenList.Create(SyntaxFactory.Token(SyntaxKind.ThisKeyword)));
 
         public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate), newClass);
 
