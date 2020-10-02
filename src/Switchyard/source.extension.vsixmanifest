@@ -5,6 +5,7 @@
         <DisplayName>Switchyard</DisplayName>
         <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C# with less effort
  - Expand enum to union type
+ - Generate 'With' extension
  - Generate StateMachine / FluentApi from dot graph.</Description>
         <MoreInfo>https://github.com/bluehands/Switchyard</MoreInfo>
         <License>LICENSE.txt</License>

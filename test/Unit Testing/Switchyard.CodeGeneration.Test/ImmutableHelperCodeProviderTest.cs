@@ -58,33 +58,4 @@ namespace Switchyard.CodeGeneration.Test
             return (workspace, document);
         }
     }
-
-    public class MyImmutableObject
-    {
-        public int Number { get; }
-        public bool IsActive { get; }
-        public string Name { get; }
-
-        public MyImmutableObject(int number, bool isActive, string name)
-        {
-            Number = number;
-            IsActive = isActive;
-            Name = name;
-        }
-
-        public void Test()
-        {
-            var bruno = new MyImmutableObject(42, true, "Bruno");
-            var brunoInactivated = bruno.With(isActive: false);
-        }
-    }
-    public static class MyImmutableObjectWithExtension
-    {
-        public static MyImmutableObject With(this MyImmutableObject myImmutableObject, Option<int> number = null, Option<bool> isActive = null, Option<string> name = null) => 
-            new MyImmutableObject(
-                number: number != null ? number.Match(x => x, () => myImmutableObject.Number) : myImmutableObject.Number, 
-                isActive: isActive != null ? isActive.Match(x => x, () => myImmutableObject.IsActive) : myImmutableObject.IsActive, 
-                name: name != null ? name.Match(x => x, () => myImmutableObject.Name) : myImmutableObject.Name
-            );
-    }
 }
