@@ -63,6 +63,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="FunicularSwitch.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="index.html" />
     <Content Include="LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

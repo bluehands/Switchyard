@@ -7,8 +7,9 @@
  - Expand enum to union type
  - Generate 'With' extension
  - Generate StateMachine / FluentApi from dot graph.</Description>
-        <MoreInfo>https://github.com/bluehands/Switchyard</MoreInfo>
+        <MoreInfo>https://marketplace.visualstudio.com/items?itemName=bluehands.Switchyard</MoreInfo>
         <License>LICENSE.txt</License>
+        <Icon>FunicularSwitch.png</Icon>
         <Tags>Refactoring</Tags>
     </Metadata>
     <Installation>
