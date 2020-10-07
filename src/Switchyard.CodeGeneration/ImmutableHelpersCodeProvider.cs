@@ -19,6 +19,8 @@ namespace Switchyard.CodeGeneration
 
         public async Task GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
         {
+            var classInfos = ClassInfoWalker.GetClassInfos(await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false));
+
             var constructors = classDeclaration
                 .Members
                 .OfType<ConstructorDeclarationSyntax>()
@@ -33,7 +35,9 @@ namespace Switchyard.CodeGeneration
 
 
             var originalClassName = classDeclaration.Name();
-            var extensionClassName = $"{originalClassName}WithExtension";
+            var classInfo = classInfos.First(c => c.Name == originalClassName);
+            var fullClassName = classInfo.QualifiedName(".");
+            var extensionClassName = $"{classInfo.QualifiedName("")}WithExtension";
             var extensionClass = SyntaxFactory
                 .ClassDeclaration(extensionClassName)
                 .Public()
@@ -42,9 +46,9 @@ namespace Switchyard.CodeGeneration
                     SyntaxFactory.MethodDeclaration(Types.String, "With")
                         .Public()
                         .Static()
-                        .WithReturnType(SyntaxFactory.ParseTypeName(originalClassName))
-                        .WithParameterList(ToWithParameters(classDeclaration, constructor.ParameterList))
-                        .WithExpressionBody(Call(classDeclaration, constructor.ParameterList))
+                        .WithReturnType(SyntaxFactory.ParseTypeName(fullClassName))
+                        .WithParameterList(ToWithParameters(fullClassName, classDeclaration, constructor.ParameterList))
+                        .WithExpressionBody(Call(fullClassName, classDeclaration, constructor.ParameterList))
 
                 ).NormalizeWhitespace();
 
@@ -55,9 +59,10 @@ namespace Switchyard.CodeGeneration
             m_Workspace.UpdateRoot(document, updated);
         }
 
-        static string Call(BaseTypeDeclarationSyntax classDeclaration, BaseParameterListSyntax constructorParameters)
+        static string Call(string fullClassName, BaseTypeDeclarationSyntax classDeclaration,
+            BaseParameterListSyntax constructorParameters)
         {
-            var sb = new StringBuilder($"new {classDeclaration.Name()}(");
+            var sb = new StringBuilder($"new {fullClassName}(");
 
             var thisParameterName = classDeclaration.Name().FirstToLower();
 
@@ -76,10 +81,11 @@ namespace Switchyard.CodeGeneration
             return sb.ToString();
         }
 
-        static ParameterListSyntax ToWithParameters(BaseTypeDeclarationSyntax classDeclarationSyntax, BaseParameterListSyntax constructorParameterList)
+        static ParameterListSyntax ToWithParameters(string fullClassName,
+            BaseTypeDeclarationSyntax classDeclarationSyntax, BaseParameterListSyntax constructorParameterList)
         {
-            var thisTypeName = classDeclarationSyntax.Name();
-            var thisParameters = SyntaxFactory.Parameter(SyntaxFactory.Identifier(thisTypeName.FirstToLower()))
+            var thisTypeName = fullClassName;
+            var thisParameters = SyntaxFactory.Parameter(SyntaxFactory.Identifier(classDeclarationSyntax.Name().FirstToLower()))
                 .WithType(SyntaxFactory.ParseTypeName(thisTypeName))
                 .AddThis();
 

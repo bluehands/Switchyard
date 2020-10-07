@@ -16,8 +16,7 @@ namespace Switchyard.CodeGeneration
 
         public UnionTypeCodeProvider(Workspace workspace) => m_Workspace = workspace;
 
-        public async Task EnumToClass(Document document, EnumDeclarationSyntax enumNode,
-            CancellationToken cancellationToken)
+        public async Task EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
             var enumName = enumNode.Name();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);

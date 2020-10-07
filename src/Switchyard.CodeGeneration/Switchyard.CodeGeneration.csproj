@@ -228,6 +228,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyHelper.cs" />
+    <Compile Include="ClassInfoWalker.cs" />
+    <Compile Include="EnumerableExtension.cs" />
     <Compile Include="ImmutableHelpersCodeProvider.cs" />
     <Compile Include="MatchMethods.cs" />
     <Compile Include="StateMachineCodeProvider.cs" />
