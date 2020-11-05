@@ -107,4 +107,39 @@ namespace Switchyard.CodeGeneration.Test
 }");
         }
     }
+
+    [TestClass]
+    public abstract class with_union_type_code_provider : CodeProviderSpec
+    {
+        protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
+        {
+            var codeProvider = new UnionTypeCodeProvider(workspace);
+            await codeProvider.EnumToClass(
+                    document,
+                    root.DescendantNodes().OfType<EnumDeclarationSyntax>().Last(), CancellationToken.None)
+                .ConfigureAwait(false);
+        }
+    }
+
+    [TestClass]
+    public class When_generating_union_type_for_nested_enum : with_union_type_code_provider
+    {
+        protected override string WithSource() => @"namespace Test
+{
+    public class Parent
+    {
+        public enum Child
+        {
+            One,
+            Two
+        }
+    }
+}";
+
+        [TestMethod]
+        public void Then_assertion()
+        {
+            Updated.Should().NotBeNull();
+        }
+    }
 }

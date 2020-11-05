@@ -113,14 +113,15 @@ namespace Switchyard.CodeGeneration
 
             classDeclaration = classDeclaration
                 .AddMatchMethods(
-                    names.BaseInterfaceName,
+                    QualifiedTypeName.NoParents(names.BaseInterfaceName),
                     names.BaseName.FirstToLower(),
                     $"{StateMachineModel.StatePropertyName}.{StateMachineModel.EnumPropertyName}",
                     names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName, v.StateName.FirstToLower(),
                             $"{names.OuterStateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateName}"))
                         .ToImmutableList())
                 .AddMatchMethods(
-                    names.ParameterInterfaceName, "parameter",
+                    QualifiedTypeName.NoParents(names.ParameterInterfaceName),
+                    "parameter",
                     $"{StateMachineModel.TriggerPropertyName}.{StateMachineModel.EnumPropertyName}",
                     names.VertexClasses.SelectMany(v => v.Transitions
                             .Select(t => new MatchMethods.DerivedType(t.FullParameterClassName,
@@ -298,7 +299,7 @@ namespace Switchyard.CodeGeneration
                 var newEnumDeclaration = SyntaxFactory.EnumDeclaration(stateClassName)
                     .AddMembers(enumMemberNames.Select(SyntaxFactory.EnumMemberDeclaration).ToArray()).Public();
                 documentRoot = documentRoot.AddMemberToNamespace(newEnumDeclaration);
-                documentRoot = documentRoot.GenerateEnumClass(stateClassName, Option<ClassDeclarationSyntax>.None);
+                documentRoot = documentRoot.GenerateEnumClass(QualifiedTypeName.NoParents(stateClassName), Option<ClassDeclarationSyntax>.None);
             }
             else
             {
@@ -307,7 +308,7 @@ namespace Switchyard.CodeGeneration
                         enumMemberNames.Select(SyntaxFactory.EnumMemberDeclaration).ToArray())
                     );
                 documentRoot = documentRoot.ReplaceNode(oldEnumDeclaration, newEnumDeclaration)
-                    .UpdateEnumClass(stateClassName);
+                    .UpdateEnumClass(QualifiedTypeName.NoParents(stateClassName));
             }
 
             return documentRoot;

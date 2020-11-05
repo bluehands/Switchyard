@@ -18,20 +18,22 @@ namespace Switchyard.CodeGeneration
 
         public async Task EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
-            var enumName = enumNode.Name();
+            var enumName = enumNode.QualifiedName();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);
 
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var unionType = enumName == WrapEnumToClass.DefaultNestedEnumTypeName
+
+            var unionType = enumName.Name == WrapEnumToClass.DefaultNestedEnumTypeName
                 ? (ClassDeclarationSyntax) enumNode.Parent
                 : Option.None<ClassDeclarationSyntax>();
-            var unionTypeName = unionType.Match(u => u.Name(), () => enumName);
+            var unionTypeName = unionType.Match(u => u.QualifiedName(), () => enumNode.QualifiedName());
 
             root = root.GenerateEnumClass(enumName, unionType);
 
-            var extensionClassName = $"{unionTypeName}Extension";
+            var extensionClassName = $"{unionTypeName.QualifiedName("")}Extension";
 
-            var classDeclaration = root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName)
+            var classDeclaration = root
+                .TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName)
                 .Match(ext => ext, () =>
                 {
                     var extensionClass = SyntaxFactory.ClassDeclaration(extensionClassName)
@@ -39,7 +41,7 @@ namespace Switchyard.CodeGeneration
                         .Static();
                         
                     // ReSharper disable once AccessToModifiedClosure
-                    root = root.AddMemberToNamespace(extensionClass, m => m is ClassDeclarationSyntax clazz && clazz.Name() == unionTypeName);
+                    root = root.AddMemberToNamespace(extensionClass, m => m is ClassDeclarationSyntax clazz && clazz.QualifiedName() == unionTypeName);
                     return extensionClass;
                 });
 

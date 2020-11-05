@@ -19,7 +19,7 @@ namespace Switchyard.CodeGeneration
 
         public async Task GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
         {
-            var classInfos = ClassInfoWalker.GetClassInfos(await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false));
+            var classInfos = TypeNameWalker.GetQualifiedTypeNames(await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false));
 
             var constructors = classDeclaration
                 .Members

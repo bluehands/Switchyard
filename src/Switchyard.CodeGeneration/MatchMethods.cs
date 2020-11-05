@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -50,15 +49,15 @@ namespace Switchyard.CodeGeneration
         }
 
 
-        public static ClassDeclarationSyntax AddMatchMethods(this ClassDeclarationSyntax classDeclaration, string unionTypeName, ImmutableList<DerivedType> derivedTypes)
+        public static ClassDeclarationSyntax AddMatchMethods(this ClassDeclarationSyntax classDeclaration, QualifiedTypeName unionTypeName, ImmutableList<DerivedType> derivedTypes)
         {
-            var baseTypeParameterName = unionTypeName.FirstToLower();
+            var baseTypeParameterName = unionTypeName.Name.FirstToLower();
             var switchEnumMember = WrapEnumToClass.DefaultEnumPropertyName;
 
             return AddMatchMethods(classDeclaration, unionTypeName, baseTypeParameterName, switchEnumMember, derivedTypes);
         }
 
-        public static ClassDeclarationSyntax AddMatchMethods(this ClassDeclarationSyntax classDeclaration, string unionTypeName,
+        public static ClassDeclarationSyntax AddMatchMethods(this ClassDeclarationSyntax classDeclaration, QualifiedTypeName unionTypeName,
             string baseTypeParameterName, string switchEnumMember, ImmutableList<DerivedType> derivedTypes)
         {
             return GenerateAll(unionTypeName, baseTypeParameterName, switchEnumMember, derivedTypes)
@@ -74,7 +73,7 @@ namespace Switchyard.CodeGeneration
                    newMethod.ParameterList.Parameters[1].Type.ToString();
         }
 
-        public static IEnumerable<MethodDeclarationSyntax> GenerateAll(string baseTypeName,
+        public static IEnumerable<MethodDeclarationSyntax> GenerateAll(QualifiedTypeName baseTypeName,
             string baseTypeParameterName,
             string switchEnumMember, ImmutableList<DerivedType> derivedTypes)
         {
@@ -84,14 +83,14 @@ namespace Switchyard.CodeGeneration
             yield return GenerateFuncAsyncAsync(baseTypeName, baseTypeParameterName, derivedTypes);
         }
 
-        public static MethodDeclarationSyntax GenerateFuncSync(string baseTypeName, string baseTypeParameterName,
+        public static MethodDeclarationSyntax GenerateFuncSync(QualifiedTypeName baseTypeName, string baseTypeParameterName,
             string switchEnumMember, ImmutableList<DerivedType> derivedTypes)
         {
             return GenerateFuncSync(baseTypeName, baseTypeParameterName, switchEnumMember, derivedTypes, "T",
                 d => SyntaxFactory.ParseStatement($"return {d.ParameterName}(({d.TypeName}){baseTypeParameterName});"));
         }
 
-        public static MethodDeclarationSyntax GenerateFuncAsync(string baseTypeName, string baseTypeParameterName,
+        public static MethodDeclarationSyntax GenerateFuncAsync(QualifiedTypeName baseTypeName, string baseTypeParameterName,
             string switchEnumMember, ImmutableList<DerivedType> derivedTypes)
         {
             return GenerateFuncSync(baseTypeName, baseTypeParameterName, switchEnumMember, derivedTypes, "Task<T>",
@@ -99,26 +98,26 @@ namespace Switchyard.CodeGeneration
                 .Async();
         }
 
-        public static MethodDeclarationSyntax GenerateFuncAsyncAsync(string baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes)
+        public static MethodDeclarationSyntax GenerateFuncAsyncAsync(QualifiedTypeName baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes)
         {
             return MatchMethodDeclaration($"Task<{baseTypeName}>", baseTypeParameterName, derivedTypes, "Task<T>")
                 .Async()
                 .WithExpressionBody($"await (await {baseTypeParameterName}.ConfigureAwait(false)).Match({string.Join(",", derivedTypes.Select(d => d.ParameterName))}).ConfigureAwait(false)");
         }
 
-        public static MethodDeclarationSyntax GenerateFuncAsyncSync(string baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes)
+        public static MethodDeclarationSyntax GenerateFuncAsyncSync(QualifiedTypeName baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes)
         {
             return MatchMethodDeclaration($"Task<{baseTypeName}>", baseTypeParameterName, derivedTypes, "Task<T>", "T")
                 .Async()
                 .WithExpressionBody($"(await {baseTypeParameterName}.ConfigureAwait(false)).Match({string.Join(",", derivedTypes.Select(d => d.ParameterName))})");
         }
 
-        public static MethodDeclarationSyntax GenerateFuncSync(string baseTypeName, string baseTypeParameterName,
+        public static MethodDeclarationSyntax GenerateFuncSync(QualifiedTypeName baseTypeName, string baseTypeParameterName,
             string switchEnumMember,
             ImmutableList<DerivedType> derivedTypes, string returnType,
             Func<DerivedType, StatementSyntax> switchStatement)
         {
-            var matchMethod = MatchMethodDeclaration(baseTypeName, baseTypeParameterName, derivedTypes, returnType)
+            var matchMethod = MatchMethodDeclaration(baseTypeName.QualifiedName(), baseTypeParameterName, derivedTypes, returnType)
                 .WithBody(SyntaxFactory.Block()
                     .AddStatements(
                         SyntaxFactory.SwitchStatement(SyntaxFactory.ParseExpression($"{baseTypeParameterName}.{switchEnumMember}"))
@@ -129,7 +128,7 @@ namespace Switchyard.CodeGeneration
                                 )
                                 .Concat(new[]{SyntaxFactory.SwitchSection()
                                     .AddLabels(SyntaxFactory.DefaultSwitchLabel())
-                                    .AddStatements(SyntaxFactory.ParseStatement($"throw new ArgumentException($\"Unknown type implementing {baseTypeName}: {{{baseTypeParameterName}.GetType().Name}}\");"))
+                                    .AddStatements(SyntaxFactory.ParseStatement($"throw new ArgumentException($\"Unknown type derived from {baseTypeName}: {{{baseTypeParameterName}.GetType().Name}}\");"))
                                 })
                                 .ToArray()
                             )
