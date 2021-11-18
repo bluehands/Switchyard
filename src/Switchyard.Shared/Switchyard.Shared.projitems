@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects Condition="'$(MSBuildVersion)' == '' Or '$(MSBuildVersion)' &lt; '16.0'">$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>7c88c18f-93b1-42fc-ae4a-82e1c83035ac</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>Switchyard.Shared</Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ActionSourceProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EnumToClassAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GenerateStateMachineAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)GenerateWithAction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)RoslynExtension.cs" />
+  </ItemGroup>
+</Project>

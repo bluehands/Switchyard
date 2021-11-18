@@ -14,9 +14,26 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docu", "Docu", "{15A8D969-A
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.CodeGeneration.Test", "..\test\Unit Testing\Switchyard.CodeGeneration.Test\Switchyard.CodeGeneration.Test.csproj", "{2874A9E9-318B-49FE-86A3-5F5C63A9303E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.CodeGeneration.Test", "..\test\Unit Testing\Switchyard.CodeGeneration.Test\Switchyard.CodeGeneration.Test.csproj", "{2874A9E9-318B-49FE-86A3-5F5C63A9303E}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Switchyard.Shared", "Switchyard.Shared\Switchyard.Shared.shproj", "{7C88C18F-93B1-42FC-AE4A-82E1C83035AC}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E52E99AF-928A-4DE3-A5D1-486C9B075644}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\FunicularSwitch.png = Shared\FunicularSwitch.png
+		Shared\index.html = Shared\index.html
+		Shared\LICENSE.txt = Shared\LICENSE.txt
+		Shared\stylesheet.css = Shared\stylesheet.css
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.vs22", "Switchyard.vs22\Switchyard.vs22.csproj", "{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		Switchyard.Shared\Switchyard.Shared.projitems*{1c992381-7029-460c-9047-e818a9e4cc25}*SharedItemsImports = 4
+		Switchyard.Shared\Switchyard.Shared.projitems*{2fc4fe07-2626-439f-a1a1-73b6b1777e1d}*SharedItemsImports = 4
+		Switchyard.Shared\Switchyard.Shared.projitems*{7c88c18f-93b1-42fc-ae4a-82e1c83035ac}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -34,6 +51,10 @@ Global
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
