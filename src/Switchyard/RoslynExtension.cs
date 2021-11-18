@@ -3,6 +3,7 @@ using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Switchyard.CodeGeneration;
 
 namespace Switchyard
 {
@@ -14,7 +15,7 @@ namespace Switchyard
             foreach (var project in solution.Projects)
             {
                 var compilation = await project.GetCompilationAsync().ConfigureAwait(false);
-                type = compilation?.GetTypeByMetadataName(fullTypeName);
+                type = compilation.GetTypeByMetadataName(fullTypeName);
                 if (type != null)
                     break;
             }
