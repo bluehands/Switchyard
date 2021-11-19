@@ -7,16 +7,14 @@ using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.Options;
 
 namespace Switchyard.CodeGeneration
 {
     public class UnionTypeCodeProvider
     {
-        readonly Workspace m_Workspace;
-
-        public UnionTypeCodeProvider(Workspace workspace) => m_Workspace = workspace;
-
-        public async Task EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
+        public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
             var enumName = enumNode.QualifiedName();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);
@@ -51,8 +49,10 @@ namespace Switchyard.CodeGeneration
             classDeclaration = classDeclaration.AddMatchMethods(unionTypeName, derivedTypes);
 
             root = root.ReplaceNode(root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName).GetValueOrThrow(), classDeclaration);
-
-            m_Workspace.UpdateRoot(document, root);
+            
+            document = document.WithSyntaxRoot(root);
+            document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
+            return document;
         }
     }
 
@@ -72,10 +72,10 @@ namespace Switchyard.CodeGeneration
     public class UnionTypeOccurrence
     {
         public UnionTypeModel Model { get; }
-        public Option<ClassDeclarationSyntax> AbstractBaseType { get; }
-        public ImmutableArray<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
+        public FunicularSwitch.Option<ClassDeclarationSyntax> AbstractBaseType { get; }
+        public ImmutableArray<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
 
-        public UnionTypeOccurrence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
+        public UnionTypeOccurrence(UnionTypeModel model, FunicularSwitch.Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
         {
             Model = model;
             AbstractBaseType = abstractBaseType;

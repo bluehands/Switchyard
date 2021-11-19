@@ -20,21 +20,23 @@ namespace Switchyard.Refactoring
     {
         public sealed override async Task ComputeRefactoringsAsync(CodeRefactoringContext context)
         {
-            // TODO: Replace the following code with your own analysis, generating a CodeAction for each refactoring to offer
-
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             // Find the node at the selection.
             var node = root.FindToken(context.Span.Start);
 
-            if (!EnumToClassAction.HasSuggestedActions(node))
-                return;
+            var enumDeclaration = EnumToClassAction.GetEnumDeclarationIfInRange(node);
+            if (enumDeclaration != null)
+            {
+                var action = CodeAction.Create($"Expand {enumDeclaration.Name()} to union type",
+                    async c =>
+                    {
+                        var updatedDoc = await UnionTypeCodeProvider.EnumToClass(context.Document, enumDeclaration, context.CancellationToken);
+                        return updatedDoc.Project.Solution;
+                    });
 
-            // For any type declaration node, create a code action to reverse the identifier text.
-            var action = CodeAction.Create("Reverse type name", c => Task.FromResult(context.Document.Project.Solution));
-
-            // Register this code action.
-            context.RegisterRefactoring(action);
+                context.RegisterRefactoring(action);
+            }
         }
 
         private async Task<Solution> ReverseTypeNameAsync(Document document, TypeDeclarationSyntax typeDecl, CancellationToken cancellationToken)

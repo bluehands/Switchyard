@@ -10,7 +10,7 @@
 
   <PropertyGroup>
     <GeneratePkgDefFile>false</GeneratePkgDefFile>
-    <IncludeAssemblyInVSIXContainer>false</IncludeAssemblyInVSIXContainer>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
     <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
     <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
@@ -24,7 +24,9 @@
     <PackageReference Include="GraphViz4Net" Version="3.0.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.8" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="3.3.1" />
-    <PackageReference Include="morelinq" Version="3.3.2" />
+    <PackageReference Include="morelinq" Version="3.3.2">
+      <IncludeAssets></IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <PropertyGroup>
@@ -37,19 +39,15 @@
     <ItemGroup>
       <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Funicular'))" />
       <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Graphviz'))" />
-      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('morelinq'))" />
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('MoreLinq'))" />
     </ItemGroup>
   </Target>
+  
+  <Import Project="..\..\Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems" Label="Shared" />
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 
   <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
-
-
-
-  <ItemGroup>
-    <ProjectReference Include="..\Switchyard.Refactoring\Switchyard.Refactoring.csproj" />
-  </ItemGroup>
 
   <ItemGroup>
     <!-- https://github.com/dotnet/sdk/issues/433 -->
