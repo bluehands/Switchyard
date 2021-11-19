@@ -2,7 +2,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Switchyard.CodeGeneration
 {
-    static class WorkspaceExtension
+    public static class WorkspaceExtension
     {
         public static void UpdateRoot(this Workspace workspace, Document document, SyntaxNode documentRoot)
         {

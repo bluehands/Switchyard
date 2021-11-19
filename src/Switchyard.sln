@@ -5,18 +5,12 @@ VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F3465C4C-D341-4CD0-AFF4-899973C24ED1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard", "Switchyard\Switchyard.csproj", "{1C992381-7029-460C-9047-E818A9E4CC25}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.CodeGeneration", "Switchyard.CodeGeneration\Switchyard.CodeGeneration.csproj", "{84FD7746-0915-40B5-9886-65BDCED56466}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docu", "Docu", "{15A8D969-A7D3-4DFD-9070-C9E3E94ADF26}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.CodeGeneration.Test", "..\test\Unit Testing\Switchyard.CodeGeneration.Test\Switchyard.CodeGeneration.Test.csproj", "{2874A9E9-318B-49FE-86A3-5F5C63A9303E}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Switchyard.Shared", "Switchyard.Shared\Switchyard.Shared.shproj", "{7C88C18F-93B1-42FC-AE4A-82E1C83035AC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E52E99AF-928A-4DE3-A5D1-486C9B075644}"
 	ProjectSection(SolutionItems) = preProject
@@ -26,56 +20,30 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E52E99
 		Shared\stylesheet.css = Shared\stylesheet.css
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.vs22", "Switchyard.vs22\Switchyard.vs22.csproj", "{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{84D84CCD-C9C0-4CEC-A74D-26452C50E0FF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Refactoring", "Switchyard.Refactoring\Switchyard.Refactoring\Switchyard.Refactoring.csproj", "{A555F7D2-8F56-4F7D-A089-0FC637960C91}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Vsix", "Switchyard.Vsix\Switchyard.Vsix.csproj", "{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Refactoring.Vsix", "Switchyard.Refactoring\Switchyard.Refactoring.Vsix\Switchyard.Refactoring.Vsix.csproj", "{397DF6EF-90C3-4300-964A-9893497825F8}"
-EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Switchyard.Refactoring.Shared", "Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.shproj", "{F8817BAD-E01D-4262-A6F1-E51D389B66AA}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Refactoring.Vsix.22", "Switchyard.Refactoring\Switchyard.Refactoring.Vsix.22\Switchyard.Refactoring.Vsix.22.csproj", "{470EAB22-6A95-4AF0-A709-F889B27342F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Vsix.22", "Switchyard.Vsix.22\Switchyard.Vsix.22.csproj", "{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		Switchyard.Shared\Switchyard.Shared.projitems*{1c992381-7029-460c-9047-e818a9e4cc25}*SharedItemsImports = 4
-		Switchyard.Shared\Switchyard.Shared.projitems*{2fc4fe07-2626-439f-a1a1-73b6b1777e1d}*SharedItemsImports = 4
-		Switchyard.Shared\Switchyard.Shared.projitems*{7c88c18f-93b1-42fc-ae4a-82e1c83035ac}*SharedItemsImports = 13
-		Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems*{f8817bad-e01d-4262-a6f1-e51d389b66aa}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2FC4FE07-2626-439F-A1A1-73B6B1777E1D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{A555F7D2-8F56-4F7D-A089-0FC637960C91}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{A555F7D2-8F56-4F7D-A089-0FC637960C91}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{A555F7D2-8F56-4F7D-A089-0FC637960C91}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A555F7D2-8F56-4F7D-A089-0FC637960C91}.Release|Any CPU.Build.0 = Release|Any CPU
-		{397DF6EF-90C3-4300-964A-9893497825F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{397DF6EF-90C3-4300-964A-9893497825F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{397DF6EF-90C3-4300-964A-9893497825F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{397DF6EF-90C3-4300-964A-9893497825F8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{470EAB22-6A95-4AF0-A709-F889B27342F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{470EAB22-6A95-4AF0-A709-F889B27342F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{470EAB22-6A95-4AF0-A709-F889B27342F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{470EAB22-6A95-4AF0-A709-F889B27342F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

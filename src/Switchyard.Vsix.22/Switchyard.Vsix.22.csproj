@@ -4,8 +4,8 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <RootNamespace>Switchyard.Refactoring.Vsix</RootNamespace>
-    <AssemblyName>Switchyard.Refactoring.Vsix</AssemblyName>
+    <RootNamespace>Switchyard</RootNamespace>
+    <AssemblyName>Switchyard</AssemblyName>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -13,26 +13,31 @@
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
     <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
-    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory> <!--for unit test-->
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <VSSDKTargetPlatformRegRootSuffix>Roslyn</VSSDKTargetPlatformRegRootSuffix>
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\CodeGenerationExtension.cs" Link="CodeGenerationExtension.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\EnumerableExtension.cs" Link="EnumerableExtension.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\ImmutableHelpersCodeProvider.cs" Link="ImmutableHelpersCodeProvider.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\MatchMethods.cs" Link="MatchMethods.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\StateMachineCodeProvider.cs" Link="StateMachineCodeProvider.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\StateMachineModel.cs" Link="StateMachineModel.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\StringExtension.cs" Link="StringExtension.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\SvgExport.cs" Link="SvgExport.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\SwitchyardRefactoringCodeRefactoringProvider.cs" Link="SwitchyardRefactoringCodeRefactoringProvider.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\TypeNameWalker.cs" Link="TypeNameWalker.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\UnionTypeCodeProvider.cs" Link="UnionTypeCodeProvider.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\WhitespaceFormatter.cs" Link="WhitespaceFormatter.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\WorkspaceExtension.cs" Link="WorkspaceExtension.cs" />
-    <Compile Include="..\..\Switchyard.Refactoring.Shared\WrapEnumToClass.cs" Link="WrapEnumToClass.cs" />
+    <Compile Include="..\Shared\CodeGenerationExtension.cs" Link="CodeGenerationExtension.cs" />
+    <Compile Include="..\Shared\EnumerableExtension.cs" Link="EnumerableExtension.cs" />
+    <Compile Include="..\Shared\ImmutableHelpersCodeProvider.cs" Link="ImmutableHelpersCodeProvider.cs" />
+    <Compile Include="..\Shared\MatchMethods.cs" Link="MatchMethods.cs" />
+    <Compile Include="..\Shared\StateMachineCodeProvider.cs" Link="StateMachineCodeProvider.cs" />
+    <Compile Include="..\Shared\StateMachineModel.cs" Link="StateMachineModel.cs" />
+    <Compile Include="..\Shared\StringExtension.cs" Link="StringExtension.cs" />
+    <Compile Include="..\Shared\SvgExport.cs" Link="SvgExport.cs" />
+    <Compile Include="..\Shared\SwitchyardRefactoringCodeRefactoringProvider.cs" Link="SwitchyardRefactoringCodeRefactoringProvider.cs" />
+    <Compile Include="..\Shared\TypeNameWalker.cs" Link="TypeNameWalker.cs" />
+    <Compile Include="..\Shared\UnionTypeCodeProvider.cs" Link="UnionTypeCodeProvider.cs" />
+    <Compile Include="..\Shared\WhitespaceFormatter.cs" Link="WhitespaceFormatter.cs" />
+    <Compile Include="..\Shared\WorkspaceExtension.cs" Link="WorkspaceExtension.cs" />
+    <Compile Include="..\Shared\WrapEnumToClass.cs" Link="WrapEnumToClass.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+	  <Content Include="..\Shared\FunicularSwitch.png" Link="FunicularSwitch.png"  IncludeInVSIX="true" />
+	  <Content Include="..\Shared\LICENSE.txt" Link="LICENSE.txt" IncludeInVSIX="true" />
   </ItemGroup>
 
   <ItemGroup>

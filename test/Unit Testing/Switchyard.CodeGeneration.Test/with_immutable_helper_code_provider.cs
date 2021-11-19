@@ -37,11 +37,12 @@ namespace Switchyard.CodeGeneration.Test
     {
         protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
         {
-            var codeProvider = new ImmutableHelpersCodeProvider(workspace);
-            await codeProvider.GenerateWithExtension(
+            var updatedDocument = await ImmutableHelpersCodeProvider.GenerateWithExtension(
                     document,
                     root.DescendantNodes().OfType<ClassDeclarationSyntax>().Last(), CancellationToken.None)
                 .ConfigureAwait(false);
+
+            workspace.TryApplyChanges(updatedDocument.Project.Solution);
         }
     }
 
@@ -113,11 +114,11 @@ namespace Switchyard.CodeGeneration.Test
     {
         protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
         {
-            var codeProvider = new UnionTypeCodeProvider(workspace);
-            await codeProvider.EnumToClass(
+            var updatedDoc = await UnionTypeCodeProvider.EnumToClass(
                     document,
                     root.DescendantNodes().OfType<EnumDeclarationSyntax>().Last(), CancellationToken.None)
                 .ConfigureAwait(false);
+            workspace.TryApplyChanges(updatedDoc.Project.Solution);
         }
     }
 

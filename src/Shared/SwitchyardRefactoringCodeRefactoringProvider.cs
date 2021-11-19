@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using FunicularSwitch;
 using Switchyard.CodeGeneration;
 
-namespace Switchyard.Refactoring
+namespace Switchyard
 {
     [ExportCodeRefactoringProvider(LanguageNames.CSharp, Name = nameof(SwitchyardRefactoringProvider)), Shared]
     internal class SwitchyardRefactoringProvider : CodeRefactoringProvider

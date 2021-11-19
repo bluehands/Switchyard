@@ -1,21 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Switchyard.Refactoring..e1fb5efa-987f-4ed3-b0bc-7de03c46a360" Version="1.0" Language="en-US" Publisher="wiedemann"/>
-    <DisplayName>Switchyard.Refactoring</DisplayName>
-    <Description xml:space="preserve">This is a sample code refactoring extension for the .NET Compiler Platform ("Roslyn").</Description>
+    <Identity Id="Switchyard.bluehands.25872dc3-9448-462d-9dc4-ae1cf1a0077b" Version="1.0" Language="en-US" Publisher="wiedemann"/>
+    <DisplayName>Switchyard</DisplayName>
+    <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C#
+ - Expand enum to union type
+ - Generate 'With' extension
+ - Generate StateMachine / FluentApi from dot graph</Description>
+    <MoreInfo>https://marketplace.visualstudio.com/items?itemName=bluehands.Switchyard</MoreInfo>
+    <License>LICENSE.txt</License>
+    <Icon>FunicularSwitch.png</Icon>
+    <Tags>Refactoring</Tags>
   </Metadata>
   <Installation>
-	  <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[17.0,18.0)">
-		  <ProductArchitecture>amd64</ProductArchitecture>
-	  </InstallationTarget>
+    <InstallationTarget Id="Microsoft.VisualStudio.Community" Version="[15.0,)" />
   </Installation>
   <Dependencies>
     <Dependency Id="Microsoft.Framework.NDP" DisplayName="Microsoft .NET Framework" d:Source="Manual" Version="[4.5,)" />
   </Dependencies>
-  <!-- <Assets> -->
-    <!-- <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="Switchyard.Refactoring" Path="|Switchyard.Refactoring|"/> -->
-  <!-- </Assets> -->
   <Assets>
         <Asset Type="Microsoft.VisualStudio.MefComponent" d:Source="Project" d:ProjectName="%CurrentProject%" Path="|%CurrentProject%|" />
     </Assets>
