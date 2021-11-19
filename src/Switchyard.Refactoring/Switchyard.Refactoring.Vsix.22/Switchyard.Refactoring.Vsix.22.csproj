@@ -19,6 +19,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\CodeGenerationExtension.cs" Link="CodeGenerationExtension.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\EnumerableExtension.cs" Link="EnumerableExtension.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\ImmutableHelpersCodeProvider.cs" Link="ImmutableHelpersCodeProvider.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\MatchMethods.cs" Link="MatchMethods.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\StateMachineCodeProvider.cs" Link="StateMachineCodeProvider.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\StateMachineModel.cs" Link="StateMachineModel.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\StringExtension.cs" Link="StringExtension.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\SvgExport.cs" Link="SvgExport.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\SwitchyardRefactoringCodeRefactoringProvider.cs" Link="SwitchyardRefactoringCodeRefactoringProvider.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\TypeNameWalker.cs" Link="TypeNameWalker.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\UnionTypeCodeProvider.cs" Link="UnionTypeCodeProvider.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\WhitespaceFormatter.cs" Link="WhitespaceFormatter.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\WorkspaceExtension.cs" Link="WorkspaceExtension.cs" />
+    <Compile Include="..\..\Switchyard.Refactoring.Shared\WrapEnumToClass.cs" Link="WrapEnumToClass.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" PrivateAssets="all" />
     <PackageReference Include="FunicularSwitch" Version="3.0.2" />
     <PackageReference Include="GraphViz4Net" Version="3.0.2" />
@@ -40,10 +57,9 @@
       <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Funicular'))" />
       <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Graphviz'))" />
       <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('MoreLinq'))" />
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Antlr'))" />
     </ItemGroup>
   </Target>
-  
-  <Import Project="..\..\Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems" Label="Shared" />
 
   <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
 

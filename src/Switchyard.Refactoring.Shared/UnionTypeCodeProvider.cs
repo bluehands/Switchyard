@@ -8,12 +8,38 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
-using Microsoft.CodeAnalysis.Options;
 
 namespace Switchyard.CodeGeneration
 {
-    public class UnionTypeCodeProvider
+    public static class UnionTypeCodeProvider
     {
+        public static FunicularSwitch.Option<EnumDeclarationSyntax> TryGetEnumDeclaration(SyntaxToken token)
+        {
+            if (token.Parent != null)
+            {
+                foreach (var node in token.Parent.AncestorsAndSelf())
+                {
+                    switch (node)
+                    {
+                        case EnumDeclarationSyntax enumDeclaration:
+                            return enumDeclaration;
+
+                        case ClassDeclarationSyntax classDeclaration:
+                        {
+                            var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
+                                .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
+
+                            if (enumDeclaration != null)
+                                return enumDeclaration;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return FunicularSwitch.Option<EnumDeclarationSyntax>.None;
+        }
+
         public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
             var enumName = enumNode.QualifiedName();

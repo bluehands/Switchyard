@@ -40,8 +40,6 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Switchyard.Shared\Switchyard.Shared.projitems*{1c992381-7029-460c-9047-e818a9e4cc25}*SharedItemsImports = 4
 		Switchyard.Shared\Switchyard.Shared.projitems*{2fc4fe07-2626-439f-a1a1-73b6b1777e1d}*SharedItemsImports = 4
-		Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems*{397df6ef-90c3-4300-964a-9893497825f8}*SharedItemsImports = 5
-		Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems*{470eab22-6a95-4af0-a709-f889b27342f8}*SharedItemsImports = 5
 		Switchyard.Shared\Switchyard.Shared.projitems*{7c88c18f-93b1-42fc-ae4a-82e1c83035ac}*SharedItemsImports = 13
 		Switchyard.Refactoring.Shared\Switchyard.Refactoring.Shared.projitems*{f8817bad-e01d-4262-a6f1-e51d389b66aa}*SharedItemsImports = 13
 	EndGlobalSection

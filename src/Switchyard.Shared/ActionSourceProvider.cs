@@ -103,6 +103,11 @@ namespace Switchyard
                 return Option<string>.None;
             }
 
+            return TryGetDotFilename(document);
+        }
+
+        public static Option<string> TryGetDotFilename(Document document)
+        {
             var dotFilePath = Path.ChangeExtension(document.FilePath, "dot");
             var dotFileFound = File.Exists(dotFilePath);
             return dotFileFound ? dotFilePath : Option<string>.None;
