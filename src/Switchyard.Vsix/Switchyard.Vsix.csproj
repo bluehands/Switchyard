@@ -13,7 +13,7 @@
     <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
     <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
     <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
-    <CopyBuildOutputToOutputDirectory>false</CopyBuildOutputToOutputDirectory>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <VSSDKTargetPlatformRegRootSuffix>Roslyn</VSSDKTargetPlatformRegRootSuffix>
   </PropertyGroup>
@@ -36,12 +36,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="..\Shared\FunicularSwitch.png" Link="FunicularSwitch.png"  IncludeInVSIX="true" />
+    <Content Include="..\Shared\FunicularSwitch.png" Link="FunicularSwitch.png" IncludeInVSIX="true" />
     <Content Include="..\Shared\LICENSE.txt" Link="LICENSE.txt" IncludeInVSIX="true" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.1.192" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" PrivateAssets="all" />
     <PackageReference Include="FunicularSwitch" Version="3.0.2" />
     <PackageReference Include="GraphViz4Net" Version="3.0.2" />
     <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="2.9.8" />
