@@ -4,20 +4,36 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 using MoreLinq;
 
 namespace Switchyard.CodeGeneration
 {
-    public class ImmutableHelpersCodeProvider
+    public static class ImmutableHelpersCodeProvider
     {
-        readonly Workspace m_Workspace;
+        public static Option<ClassDeclarationSyntax> TryGetClassDeclaration(SyntaxToken token)
+        {
+            if (token.Parent != null)
+            {
+                foreach (var node in token.Parent.AncestorsAndSelf())
+                {
+                    switch (node)
+                    {
+                        case ClassDeclarationSyntax classDeclaration:
+                            return classDeclaration;
+                    }
+                }
+            }
 
-        public ImmutableHelpersCodeProvider(Workspace workspace) => m_Workspace = workspace;
+            return Option<ClassDeclarationSyntax>.None;
+        }
 
-        public async Task GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
+
+        public static async Task<Document> GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
         {
             var classInfos = TypeNameWalker.GetQualifiedTypeNames(await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false));
 
@@ -27,7 +43,7 @@ namespace Switchyard.CodeGeneration
                 .ToImmutableArray();
 
             if (!constructors.Any())
-                return;
+                return document;
 
             var constructor = constructors
                 .MaxBy(c => c.ParameterList.Parameters.Count)
@@ -56,7 +72,9 @@ namespace Switchyard.CodeGeneration
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var updated = root.AddOrUpdateClass(extensionClassName, c => extensionClass, c => extensionClass);
 
-            m_Workspace.UpdateRoot(document, updated);
+            var updatedDoc = document.WithSyntaxRoot(updated);
+            updatedDoc = await Formatter.FormatAsync(updatedDoc, cancellationToken: cancellationToken);
+            return updatedDoc;
         }
 
         static string Call(string fullClassName, BaseTypeDeclarationSyntax classDeclaration,
@@ -97,7 +115,7 @@ namespace Switchyard.CodeGeneration
 
             return SyntaxFactory.ParameterList()
                 .AddParameters(
-                    new[] {thisParameters}.Concat(furtherParameters).ToArray());
+                    new[] { thisParameters }.Concat(furtherParameters).ToArray());
 
         }
     }

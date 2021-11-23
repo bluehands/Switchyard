@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.props" />
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <RootNamespace>Switchyard</RootNamespace>
+    <AssemblyName>Switchyard</AssemblyName>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GeneratePkgDefFile>false</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>false</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>false</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
+    <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
+    <VSSDKTargetPlatformRegRootSuffix>Roslyn</VSSDKTargetPlatformRegRootSuffix>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Shared\EnumerableExtension.cs" Link="EnumerableExtension.cs" />
+    <Compile Include="..\Shared\CodeGenerationExtension.cs" Link="CodeGenerationExtension.cs" />
+    <Compile Include="..\Shared\ImmutableHelpersCodeProvider.cs" Link="ImmutableHelpersCodeProvider.cs" />
+    <Compile Include="..\Shared\MatchMethods.cs" Link="MatchMethods.cs" />
+    <Compile Include="..\Shared\StateMachineCodeProvider.cs" Link="StateMachineCodeProvider.cs" />
+    <Compile Include="..\Shared\StateMachineModel.cs" Link="StateMachineModel.cs" />
+    <Compile Include="..\Shared\StringExtension.cs" Link="StringExtension.cs" />
+    <Compile Include="..\Shared\SvgExport.cs" Link="SvgExport.cs" />
+    <Compile Include="..\Shared\SwitchyardRefactoringCodeRefactoringProvider.cs" Link="SwitchyardRefactoringCodeRefactoringProvider.cs" />
+    <Compile Include="..\Shared\TypeNameWalker.cs" Link="TypeNameWalker.cs" />
+    <Compile Include="..\Shared\UnionTypeCodeProvider.cs" Link="UnionTypeCodeProvider.cs" />
+    <Compile Include="..\Shared\WhitespaceFormatter.cs" Link="WhitespaceFormatter.cs" />
+    <Compile Include="..\Shared\WorkspaceExtension.cs" Link="WorkspaceExtension.cs" />
+    <Compile Include="..\Shared\WrapEnumToClass.cs" Link="WrapEnumToClass.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Shared\FunicularSwitch.png" Link="FunicularSwitch.png" IncludeInVSIX="true" />
+    <Content Include="..\Shared\LICENSE.txt" Link="LICENSE.txt" IncludeInVSIX="true" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="17.0.5232" PrivateAssets="all" />
+    <PackageReference Include="FunicularSwitch" Version="3.0.2" />
+    <PackageReference Include="GraphViz4Net" Version="3.0.2" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.0.1" />
+    <PackageReference Include="morelinq" Version="3.3.2">
+      <IncludeAssets></IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <StartAction>Program</StartAction>
+    <StartProgram>$(DevEnvDir)devenv.exe</StartProgram>
+    <StartArguments>/rootsuffix $(VSSDKTargetPlatformRegRootSuffix)</StartArguments>
+  </PropertyGroup>
+  
+  <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">
+    <ItemGroup>
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Funicular'))" />
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Graphviz'))" />
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('MoreLinq'))" />
+      <VSIXSourceItem Include="@(ReferencePath)" Condition="$([System.String]::new('%(ReferencePath.FusionName)').StartsWith('Antlr'))" />
+    </ItemGroup>
+  </Target>
+
+  <Import Sdk="Microsoft.NET.Sdk" Project="Sdk.targets" />
+
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets')" />
+
+  <ItemGroup>
+    <!-- https://github.com/dotnet/sdk/issues/433 -->
+    <ProjectReference Update="@(ProjectReference)" AdditionalProperties="TargetFramework=netstandard2.0" />
+
+    <!-- https://github.com/Microsoft/extendvs/issues/57 -->
+    <ProjectReference Update="@(ProjectReference)" Name="%(Filename)" />
+  </ItemGroup>
+
+</Project>

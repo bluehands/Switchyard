@@ -1,10 +1,10 @@
-Ideas
+Switchyard:
 
- - Warn if method represents non existent transition
- - Warn if switch misses label
- - Non deterministic state machines 
- - move purly generated code to separate file (match methods and trigger / state union types)
- - support nested classes in UnionType and state machine refactoring
- - format with extension with whitespaces
- - handle generic union types
-
+ - add missing usings for extensions
+ - expression bodied
+ - purly generated code to separate file 
+ - abstracte basisklasse zurückgeben, wenn mans will
+ - modern namespaces
+ - generic cases
+ - match auf transition result
+ - parameters as union type

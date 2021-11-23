@@ -3,452 +3,333 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-namespace Sample
+namespace Sample;
+
+public interface Ism
 {
-    public abstract class MyResult
+    smState State { get; }
+}
+
+public abstract class Test
+{
+    public static readonly Test Eins = new Eins_();
+    public static readonly Test Zwei = new Zwei_();
+
+    public class Eins_ : Test
     {
-        public enum Ids
+        public Eins_() : base(UnionCases.Eins)
         {
-            Ok,
-            Warning,
-            Error
-        }
-
-        public Ids Id
-        {
-            get;
-        }
-
-        protected MyResult(Ids id)
-        {
-            Id = id;
-        }
-
-        public override string ToString()
-        {
-            return Enum.GetName(typeof(Ids), Id) ?? Id.ToString();
-        }
-
-        bool Equals(MyResult other)
-        {
-            return Id == other.Id;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-            if (ReferenceEquals(this, obj))
-                return true;
-            if (obj.GetType() != GetType())
-                return false;
-            return Equals((MyResult)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)Id;
-        }
-
-        public static readonly MyResult Ok = new Ok_();
-        public static readonly MyResult Warning = new Warning_();
-        public static readonly MyResult Error = new Error_();
-        public class Ok_ : MyResult
-        {
-            public Ok_() : base(Ids.Ok)
-            {
-            }
-        }
-
-        public class Warning_ : MyResult
-        {
-            public Warning_() : base(Ids.Warning)
-            {
-            }
-        }
-
-        public class Error_ : MyResult
-        {
-            public Error_() : base(Ids.Error)
-            {
-            }
         }
     }
 
-
-    public static class MyResultExtension
+    public class Zwei_ : Test
     {
-        public static T Match<T>(this MyResult myResult, Func<MyResult.Ok_, T> ok, Func<MyResult.Warning_, T> warning, Func<MyResult.Error_, T> error)
+        public Zwei_() : base(UnionCases.Zwei)
         {
-            switch (myResult.Id)
-            {
-                case MyResult.Ids.Ok:
-                    return ok((MyResult.Ok_)myResult);
-                case MyResult.Ids.Warning:
-                    return warning((MyResult.Warning_)myResult);
-                case MyResult.Ids.Error:
-                    return error((MyResult.Error_)myResult);
-                default:
-                    throw new ArgumentException($"Unknown type implementing MyResult: {myResult.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this MyResult myResult, Func<MyResult.Ok_, Task<T>> ok, Func<MyResult.Warning_, Task<T>> warning, Func<MyResult.Error_, Task<T>> error)
-        {
-            switch (myResult.Id)
-            {
-                case MyResult.Ids.Ok:
-                    return await ok((MyResult.Ok_)myResult).ConfigureAwait(false);
-                case MyResult.Ids.Warning:
-                    return await warning((MyResult.Warning_)myResult).ConfigureAwait(false);
-                case MyResult.Ids.Error:
-                    return await error((MyResult.Error_)myResult).ConfigureAwait(false);
-                default:
-                    throw new ArgumentException($"Unknown type implementing MyResult: {myResult.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Task<MyResult> myResult, Func<MyResult.Ok_, T> ok, Func<MyResult.Warning_, T> warning, Func<MyResult.Error_, T> error)
-        {
-            return (await myResult.ConfigureAwait(false)).Match(ok, warning, error);
-        }
-
-        public static async Task<T> Match<T>(this Task<MyResult> myResult, Func<MyResult.Ok_, Task<T>> ok, Func<MyResult.Warning_, Task<T>> warning, Func<MyResult.Error_, Task<T>> error)
-        {
-            return await(await myResult.ConfigureAwait(false)).Match(ok, warning, error).ConfigureAwait(false);
         }
     }
 
-    public interface Ism
+    internal enum UnionCases
     {
-        smState State
+        Eins,
+        Zwei
+    }
+
+    internal UnionCases UnionCase { get; }
+    Test(UnionCases unionCase) => UnionCase = unionCase;
+
+    public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+    bool Equals(Test other) => UnionCase == other.UnionCase;
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Test)obj);
+    }
+
+    public override int GetHashCode() => (int)UnionCase;
+}
+
+public static class TestExtension
+{
+    public static T Match<T>(this Test test, Func<Test.Eins_, T> eins, Func<Test.Zwei_, T> zwei)
+    {
+        switch (test.UnionCase)
         {
-            get;
+            case Test.UnionCases.Eins:
+                return eins((Test.Eins_)test);
+            case Test.UnionCases.Zwei:
+                return zwei((Test.Zwei_)test);
+            default:
+                throw new ArgumentException($"Unknown type derived from Test: {test.GetType().Name}");
         }
     }
 
-    public class asm : Ism
+    public static async Task<T> Match<T>(this Test test, Func<Test.Eins_, Task<T>> eins, Func<Test.Zwei_, Task<T>> zwei)
     {
-        public smState State => smState.a;
-        public bsm atob()
+        switch (test.UnionCase)
         {
-            return new bsm();
-        }
-
-        public bsm atob(smParameters.atob parameters)
-        {
-            return atob();
+            case Test.UnionCases.Eins:
+                return await eins((Test.Eins_)test).ConfigureAwait(false);
+            case Test.UnionCases.Zwei:
+                return await zwei((Test.Zwei_)test).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type derived from Test: {test.GetType().Name}");
         }
     }
 
-    public class bsm : Ism
+    public static async Task<T> Match<T>(this Task<Test> test, Func<Test.Eins_, T> eins, Func<Test.Zwei_, T> zwei) => (await test.ConfigureAwait(false)).Match(eins, zwei);
+    public static async Task<T> Match<T>(this Task<Test> test, Func<Test.Eins_, Task<T>> eins, Func<Test.Zwei_, Task<T>> zwei) => await(await test.ConfigureAwait(false)).Match(eins, zwei).ConfigureAwait(false);
+}
+
+public class asm : Ism
+{
+    public smState State => smState.a;
+
+    public bsm atob()
     {
-        public smState State => smState.b;
+        return new bsm();
     }
 
-    public interface IsmParameter
+    public bsm atob(smParameters.atob parameters)
     {
-        smTrigger Trigger
-        {
-            get;
-        }
+        return atob();
     }
+}
 
-    public static class smParameters
+public class bsm : Ism
+{
+    public smState State => smState.b;
+}
+
+public interface IsmParameter
+{
+    smTrigger Trigger { get; }
+}
+
+public static class smParameters
+{
+    public class atob : IsmParameter
     {
-        public class atob : IsmParameter
-        {
-            public smTrigger Trigger => smTrigger.atob;
-        }
+        public smTrigger Trigger => smTrigger.atob;
     }
+}
 
-    public abstract class smTrigger
+public abstract class smState
+{
+    public static readonly smState a = new a_();
+    public static readonly smState b = new b_();
+
+    public class a_ : smState
     {
-        public enum Ids
+        public a_() : base(UnionCases.a)
         {
-            atob
-        }
-
-        public Ids Id
-        {
-            get;
-        }
-
-        protected smTrigger(Ids id)
-        {
-            Id = id;
-        }
-
-        public override string ToString()
-        {
-            return Enum.GetName(typeof(Ids), Id) ?? Id.ToString();
-        }
-
-        bool Equals(smTrigger other)
-        {
-            return Id == other.Id;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-            if (ReferenceEquals(this, obj))
-                return true;
-            if (obj.GetType() != GetType())
-                return false;
-            return Equals((smTrigger)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)Id;
-        }
-
-        public static readonly atob_ atob = new atob_();
-        public class atob_ : smTrigger
-        {
-            public atob_() : base(Ids.atob)
-            {
-            }
         }
     }
 
-    public abstract class smTransitionResult
+    public class b_ : smState
     {
-    }
-
-    public class smTransition : smTransitionResult
-    {
-        public Ism Source
+        public b_() : base(UnionCases.b)
         {
-            get;
-        }
-
-        public Ism Destination
-        {
-            get;
-        }
-
-        public IsmParameter Trigger
-        {
-            get;
-        }
-
-        public smTransition(Ism source, Ism destination, IsmParameter trigger)
-        {
-            Source = source;
-            Destination = destination;
-            Trigger = trigger;
         }
     }
 
-    public class smInvalidTrigger : smTransitionResult
+    internal enum UnionCases
     {
-        public Ism Source
-        {
-            get;
-        }
+        a,
+        b
+    }
 
-        public IsmParameter Trigger
-        {
-            get;
-        }
+    internal UnionCases UnionCase { get; }
+    smState(UnionCases unionCase) => UnionCase = unionCase;
 
-        public smInvalidTrigger(Ism source, IsmParameter trigger)
+    public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+    bool Equals(smState other) => UnionCase == other.UnionCase;
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((smState)obj);
+    }
+
+    public override int GetHashCode() => (int)UnionCase;
+}
+
+public abstract class smTrigger
+{
+    public static readonly smTrigger atob = new atob_();
+
+    public class atob_ : smTrigger
+    {
+        public atob_() : base(UnionCases.atob)
         {
-            Source = source;
-            Trigger = trigger;
         }
     }
 
-    public static class smExtension
+    internal enum UnionCases
     {
-        public static Ism Apply(this Ism sm, IsmParameter parameter)
+        atob
+    }
+
+    internal UnionCases UnionCase { get; }
+    smTrigger(UnionCases unionCase) => UnionCase = unionCase;
+
+    public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+    bool Equals(smTrigger other) => UnionCase == other.UnionCase;
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((smTrigger)obj);
+    }
+
+    public override int GetHashCode() => (int)UnionCase;
+}
+
+public abstract class smTransitionResult
+{
+}
+
+public class smTransition : smTransitionResult
+{
+    public Ism Source { get; }
+    public Ism Destination { get; }
+    public IsmParameter Trigger { get; }
+
+    public smTransition(Ism source, Ism destination, IsmParameter trigger)
+    {
+        Source = source; Destination = destination; Trigger = trigger;
+    }
+}
+
+public class smInvalidTrigger : smTransitionResult
+{
+    public Ism Source { get; }
+    public IsmParameter Trigger { get; }
+
+    public smInvalidTrigger(Ism source, IsmParameter trigger)
+    {
+        Source = source; Trigger = trigger;
+    }
+}
+
+public static class smExtension
+{
+    public static Ism Apply(this Ism sm, IsmParameter parameter)
+    {
+        switch (sm.State.UnionCase)
         {
-            switch (sm.State.Id)
-            {
-                case smState.Ids.a:
+            case smState.UnionCases.a:
+                {
+                    switch (parameter.Trigger.UnionCase)
                     {
-                        switch (parameter.Trigger.Id)
-                        {
-                            case smTrigger.Ids.atob:
-                                return ((asm)sm).atob((smParameters.atob)parameter);
-                            default:
-                                return sm;
-                        }
+                        case smTrigger.UnionCases.atob:
+                            return ((asm)sm).atob((smParameters.atob)parameter);
+                        default:
+                            return sm;
                     }
+                }
 
-                case smState.Ids.b:
+            case smState.UnionCases.b:
+                {
+                    switch (parameter.Trigger.UnionCase)
                     {
-                        switch (parameter.Trigger.Id)
-                        {
-                            default:
-                                return sm;
-                        }
+                        default:
+                            return sm;
                     }
+                }
 
-                default:
-                    throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
-            }
-        }
-
-        public static smTransitionResult DoTransition(this Ism sm, IsmParameter parameter)
-        {
-            switch (sm.State.Id)
-            {
-                case smState.Ids.a:
-                    {
-                        switch (parameter.Trigger.Id)
-                        {
-                            case smTrigger.Ids.atob:
-                                return new smTransition(sm, ((asm)sm).atob((smParameters.atob)parameter), parameter);
-                            default:
-                                return new smInvalidTrigger(sm, parameter);
-                        }
-                    }
-
-                case smState.Ids.b:
-                    {
-                        switch (parameter.Trigger.Id)
-                        {
-                            default:
-                                return new smInvalidTrigger(sm, parameter);
-                        }
-                    }
-
-                default:
-                    throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
-            }
-        }
-
-        public static T Match<T>(this Ism sm, Func<asm, T> a, Func<bsm, T> b)
-        {
-            switch (sm.State.Id)
-            {
-                case smState.Ids.a:
-                    return a((asm)sm);
-                case smState.Ids.b:
-                    return b((bsm)sm);
-                default:
-                    throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
-            }
-        }
-
-        public static T Match<T>(this IsmParameter parameter, Func<smParameters.atob, T> atob)
-        {
-            switch (parameter.Trigger.Id)
-            {
-                case smTrigger.Ids.atob:
-                    return atob((smParameters.atob)parameter);
-                default:
-                    throw new ArgumentException($"Unknown type implementing IsmParameter: {parameter.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Ism sm, Func<asm, Task<T>> a, Func<bsm, Task<T>> b)
-        {
-            switch (sm.State.Id)
-            {
-                case smState.Ids.a:
-                    return await a((asm)sm).ConfigureAwait(false);
-                case smState.Ids.b:
-                    return await b((bsm)sm).ConfigureAwait(false);
-                default:
-                    throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Task<Ism> sm, Func<asm, T> a, Func<bsm, T> b)
-        {
-            return (await sm.ConfigureAwait(false)).Match(a, b);
-        }
-
-        public static async Task<T> Match<T>(this Task<Ism> sm, Func<asm, Task<T>> a, Func<bsm, Task<T>> b)
-        {
-            return await (await sm.ConfigureAwait(false)).Match(a, b).ConfigureAwait(false);
-        }
-
-        public static async Task<T> Match<T>(this IsmParameter parameter, Func<smParameters.atob, Task<T>> atob)
-        {
-            switch (parameter.Trigger.Id)
-            {
-                case smTrigger.Ids.atob:
-                    return await atob((smParameters.atob)parameter).ConfigureAwait(false);
-                default:
-                    throw new ArgumentException($"Unknown type implementing IsmParameter: {parameter.GetType().Name}");
-            }
-        }
-
-        public static async Task<T> Match<T>(this Task<IsmParameter> parameter, Func<smParameters.atob, T> atob)
-        {
-            return (await parameter.ConfigureAwait(false)).Match(atob);
-        }
-
-        public static async Task<T> Match<T>(this Task<IsmParameter> parameter, Func<smParameters.atob, Task<T>> atob)
-        {
-            return await (await parameter.ConfigureAwait(false)).Match(atob).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
         }
     }
 
-    public abstract class smState
+    public static smTransitionResult DoTransition(this Ism sm, IsmParameter parameter)
     {
-        public enum Ids
+        switch (sm.State.UnionCase)
         {
-            a,
-            b
-        }
+            case smState.UnionCases.a:
+                {
+                    switch (parameter.Trigger.UnionCase)
+                    {
+                        case smTrigger.UnionCases.atob:
+                            return new smTransition(sm, ((asm)sm).atob((smParameters.atob)parameter), parameter);
+                        default:
+                            return new smInvalidTrigger(sm, parameter);
+                    }
+                }
 
-        public Ids Id
-        {
-            get;
-        }
+            case smState.UnionCases.b:
+                {
+                    switch (parameter.Trigger.UnionCase)
+                    {
+                        default:
+                            return new smInvalidTrigger(sm, parameter);
+                    }
+                }
 
-        protected smState(Ids id)
-        {
-            Id = id;
-        }
-
-        public override string ToString()
-        {
-            return Enum.GetName(typeof(Ids), Id) ?? Id.ToString();
-        }
-
-        bool Equals(smState other)
-        {
-            return Id == other.Id;
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj))
-                return false;
-            if (ReferenceEquals(this, obj))
-                return true;
-            if (obj.GetType() != GetType())
-                return false;
-            return Equals((smState)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            return (int)Id;
-        }
-
-        public static readonly a_ a = new a_();
-        public static readonly b_ b = new b_();
-        public class a_ : smState
-        {
-            public a_() : base(Ids.a)
-            {
-            }
-        }
-
-        public class b_ : smState
-        {
-            public b_() : base(Ids.b)
-            {
-            }
+            default:
+                throw new ArgumentException($"Unknown type implementing Ism: {sm.GetType().Name}");
         }
     }
+
+    public static T Match<T>(this Ism sm, Func<asm, T> a, Func<bsm, T> b)
+    {
+        switch (sm.State.UnionCase)
+        {
+            case smState.UnionCases.a:
+                return a((asm)sm);
+            case smState.UnionCases.b:
+                return b((bsm)sm);
+            default:
+                throw new ArgumentException($"Unknown type derived from Ism: {sm.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Ism sm, Func<asm, Task<T>> a, Func<bsm, Task<T>> b)
+    {
+        switch (sm.State.UnionCase)
+        {
+            case smState.UnionCases.a:
+                return await a((asm)sm).ConfigureAwait(false);
+            case smState.UnionCases.b:
+                return await b((bsm)sm).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type derived from Ism: {sm.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Task<Ism> sm, Func<asm, T> a, Func<bsm, T> b) => (await sm.ConfigureAwait(false)).Match(a, b);
+    public static async Task<T> Match<T>(this Task<Ism> sm, Func<asm, Task<T>> a, Func<bsm, Task<T>> b) => await (await sm.ConfigureAwait(false)).Match(a, b).ConfigureAwait(false);
+
+    public static T Match<T>(this IsmParameter parameter, Func<smParameters.atob, T> atob)
+    {
+        switch (parameter.Trigger.UnionCase)
+        {
+            case smTrigger.UnionCases.atob:
+                return atob((smParameters.atob)parameter);
+            default:
+                throw new ArgumentException($"Unknown type derived from IsmParameter: {parameter.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this IsmParameter parameter, Func<smParameters.atob, Task<T>> atob)
+    {
+        switch (parameter.Trigger.UnionCase)
+        {
+            case smTrigger.UnionCases.atob:
+                return await atob((smParameters.atob)parameter).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type derived from IsmParameter: {parameter.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Task<IsmParameter> parameter, Func<smParameters.atob, T> atob) => (await parameter.ConfigureAwait(false)).Match(atob);
+    public static async Task<T> Match<T>(this Task<IsmParameter> parameter, Func<smParameters.atob, Task<T>> atob) => await (await parameter.ConfigureAwait(false)).Match(atob).ConfigureAwait(false);
 }

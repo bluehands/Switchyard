@@ -10,23 +10,29 @@ using Graphviz4Net.Dot.AntlrParser;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Switchyard.CodeGeneration
 {
-    public class StateMachineCodeProvider
+    public static class StateMachineCodeProvider
     {
-        readonly Workspace m_Workspace;
+        public static Option<string> TryGetDotFilename(Document document)
+        {
+            var dotFilePath = Path.ChangeExtension(document.FilePath, "dot");
+            var dotFileFound = File.Exists(dotFilePath);
+            return dotFileFound ? dotFilePath : Option<string>.None;
+        }
 
-        public StateMachineCodeProvider(Workspace workspace) => m_Workspace = workspace;
-
-        public async Task GenerateStateMachine(Document document, string dotFileName, CancellationToken cancellationToken)
+        public static async Task<Document> GenerateStateMachine(Document document, string dotFileName, CancellationToken cancellationToken)
         {
             if (!TryParseDotGraph(dotFileName, out var model))
-                return;
+                return document;
 
             var documentRoot = await GenerateStateMachineCode(document, model, cancellationToken).ConfigureAwait(false);
 
-            m_Workspace.UpdateRoot(document, documentRoot);
+            var updatedDoc = document.WithSyntaxRoot(documentRoot);
+            updatedDoc = await Formatter.FormatAsync(updatedDoc, cancellationToken: cancellationToken);
+            return updatedDoc;
         }
 
         static async Task<SyntaxNode> GenerateStateMachineCode(Document document, StateMachineModel model, CancellationToken cancellationToken)

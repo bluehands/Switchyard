@@ -37,11 +37,12 @@ namespace Switchyard.CodeGeneration.Test
     {
         protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
         {
-            var codeProvider = new ImmutableHelpersCodeProvider(workspace);
-            await codeProvider.GenerateWithExtension(
+            var updatedDocument = await ImmutableHelpersCodeProvider.GenerateWithExtension(
                     document,
                     root.DescendantNodes().OfType<ClassDeclarationSyntax>().Last(), CancellationToken.None)
                 .ConfigureAwait(false);
+
+            workspace.TryApplyChanges(updatedDocument.Project.Solution);
         }
     }
 
@@ -113,11 +114,11 @@ namespace Switchyard.CodeGeneration.Test
     {
         protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
         {
-            var codeProvider = new UnionTypeCodeProvider(workspace);
-            await codeProvider.EnumToClass(
+            var updatedDoc = await UnionTypeCodeProvider.EnumToClass(
                     document,
                     root.DescendantNodes().OfType<EnumDeclarationSyntax>().Last(), CancellationToken.None)
                 .ConfigureAwait(false);
+            workspace.TryApplyChanges(updatedDoc.Project.Solution);
         }
     }
 
@@ -138,6 +139,25 @@ namespace Switchyard.CodeGeneration.Test
 
         [TestMethod]
         public void Then_assertion()
+        {
+            Updated.Should().NotBeNull();
+        }
+    }
+
+    [TestClass]
+    public class When_executing_enum_to_union_type_with_file_scoped_namespaces : with_union_type_code_provider
+    {
+        protected override string WithSource() => @"namespace Test;
+
+    public enum Child
+    {
+        One,
+        Two
+    }    
+";
+
+        [TestMethod]
+        public void Then_it_does_not_crash()
         {
             Updated.Should().NotBeNull();
         }

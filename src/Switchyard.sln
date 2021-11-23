@@ -5,16 +5,26 @@ VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{F3465C4C-D341-4CD0-AFF4-899973C24ED1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard", "Switchyard\Switchyard.csproj", "{1C992381-7029-460C-9047-E818A9E4CC25}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.CodeGeneration", "Switchyard.CodeGeneration\Switchyard.CodeGeneration.csproj", "{84FD7746-0915-40B5-9886-65BDCED56466}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Docu", "Docu", "{15A8D969-A7D3-4DFD-9070-C9E3E94ADF26}"
 	ProjectSection(SolutionItems) = preProject
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Switchyard.CodeGeneration.Test", "..\test\Unit Testing\Switchyard.CodeGeneration.Test\Switchyard.CodeGeneration.Test.csproj", "{2874A9E9-318B-49FE-86A3-5F5C63A9303E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.CodeGeneration.Test", "..\test\Unit Testing\Switchyard.CodeGeneration.Test\Switchyard.CodeGeneration.Test.csproj", "{2874A9E9-318B-49FE-86A3-5F5C63A9303E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{E52E99AF-928A-4DE3-A5D1-486C9B075644}"
+	ProjectSection(SolutionItems) = preProject
+		Shared\FunicularSwitch.png = Shared\FunicularSwitch.png
+		Shared\index.html = Shared\index.html
+		Shared\LICENSE.txt = Shared\LICENSE.txt
+		Shared\stylesheet.css = Shared\stylesheet.css
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{84D84CCD-C9C0-4CEC-A74D-26452C50E0FF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Vsix", "Switchyard.Vsix\Switchyard.Vsix.csproj", "{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Switchyard.Vsix.22", "Switchyard.Vsix.22\Switchyard.Vsix.22.csproj", "{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -22,18 +32,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1C992381-7029-460C-9047-E818A9E4CC25}.Release|Any CPU.Build.0 = Release|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{84FD7746-0915-40B5-9886-65BDCED56466}.Release|Any CPU.Build.0 = Release|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2874A9E9-318B-49FE-86A3-5F5C63A9303E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E2A2F827-11DF-4D1A-9C7E-F2CD2380A77D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D1F3205B-A361-42FD-9A28-6A5AD88A6B04}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

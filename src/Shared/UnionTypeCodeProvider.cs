@@ -7,16 +7,40 @@ using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Formatting;
 
 namespace Switchyard.CodeGeneration
 {
-    public class UnionTypeCodeProvider
+    public static class UnionTypeCodeProvider
     {
-        readonly Workspace m_Workspace;
+        public static FunicularSwitch.Option<EnumDeclarationSyntax> TryGetEnumDeclaration(SyntaxToken token)
+        {
+            if (token.Parent != null)
+            {
+                foreach (var node in token.Parent.AncestorsAndSelf())
+                {
+                    switch (node)
+                    {
+                        case EnumDeclarationSyntax enumDeclaration:
+                            return enumDeclaration;
 
-        public UnionTypeCodeProvider(Workspace workspace) => m_Workspace = workspace;
+                        case ClassDeclarationSyntax classDeclaration:
+                        {
+                            var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
+                                .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
 
-        public async Task EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
+                            if (enumDeclaration != null)
+                                return enumDeclaration;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            return FunicularSwitch.Option<EnumDeclarationSyntax>.None;
+        }
+
+        public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
             var enumName = enumNode.QualifiedName();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);
@@ -50,9 +74,12 @@ namespace Switchyard.CodeGeneration
 
             classDeclaration = classDeclaration.AddMatchMethods(unionTypeName, derivedTypes);
 
-            root = root.ReplaceNode(root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName).GetValueOrThrow(), classDeclaration);
-
-            m_Workspace.UpdateRoot(document, root);
+            var extClass = root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName);
+            root = root.ReplaceNode(extClass.GetValueOrThrow(), classDeclaration);
+            
+            document = document.WithSyntaxRoot(root);
+            document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
+            return document;
         }
     }
 
@@ -72,10 +99,10 @@ namespace Switchyard.CodeGeneration
     public class UnionTypeOccurrence
     {
         public UnionTypeModel Model { get; }
-        public Option<ClassDeclarationSyntax> AbstractBaseType { get; }
-        public ImmutableArray<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
+        public FunicularSwitch.Option<ClassDeclarationSyntax> AbstractBaseType { get; }
+        public ImmutableArray<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
 
-        public UnionTypeOccurrence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
+        public UnionTypeOccurrence(UnionTypeModel model, FunicularSwitch.Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
         {
             Model = model;
             AbstractBaseType = abstractBaseType;

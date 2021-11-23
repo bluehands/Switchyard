@@ -209,6 +209,12 @@ namespace Switchyard.CodeGeneration
                                 var ns = (NamespaceDeclarationSyntax)sn;
                                 return ns.WithMembers(ns.Members.Insert(i, m));
                             });
+                        case FileScopedNamespaceDeclarationSyntax nameSpace:
+                            return new NodeWithMembers(nameSpace, nameSpace.Members, (sn, i, m) =>
+                            {
+                                var ns = (FileScopedNamespaceDeclarationSyntax)sn;
+                                return ns.WithMembers(ns.Members.Insert(i, m));
+                            });
                         case ClassDeclarationSyntax clazz:
                             return new NodeWithMembers(clazz, clazz.Members, (cn, i, m) =>
                             {
@@ -304,6 +310,16 @@ namespace Switchyard.CodeGeneration
         }
 
         public override SyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)
+        {
+            var members = node.Members;
+            var index = members.IndexOf(m_AfterMember);
+
+            var newMembers = index >= 0 ? members.Insert(index + 1, m_Member) : members.Add(m_Member);
+
+            return node.WithMembers(newMembers);
+        }
+
+        public override SyntaxNode VisitFileScopedNamespaceDeclaration(FileScopedNamespaceDeclarationSyntax node)
         {
             var members = node.Members;
             var index = members.IndexOf(m_AfterMember);

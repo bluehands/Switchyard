@@ -15,7 +15,7 @@ variables:
   buildConfiguration: 'Release'
   patch: $[counter('VersionCounter', 0)]
 
-name: 1.1.$(patch) # Set the value of $(Build.BuildNumber)
+name: 1.2.$(patch) # Set the value of $(Build.BuildNumber)
 
 steps:
 
@@ -37,6 +37,7 @@ steps:
     solution: '$(solution)'
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
+    vsVersion: '16.0'
 
 #- task: VSTest@2
 #  inputs:
