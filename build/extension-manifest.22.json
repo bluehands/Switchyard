@@ -1,0 +1,18 @@
+{
+    "$schema": "http://json.schemastore.org/vsix-publish",
+    "categories": [
+        "Coding"
+    ],
+    "identity": {
+        "internalName": "Switchyard-Refactoring",
+        "tags": [
+            "refactoring"
+        ]
+    },
+    "overview": "../README.md",
+    "priceCategory": "free",
+    "publisher": "bluehands",
+    "private": false,
+    "qna": true,
+    "repo": "https://github.com/bluehands/Switchyard"
+}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
-    <Identity Id="Switchyard.bluehands.25872dc3-9448-462d-9dc4-ae1cf1a0077b" Version="1.0" Language="en-US" Publisher="wiedemann"/>
+    <Identity Id="Switchyard.bluehands.25872dc3-9448-462d-9dc4-ae1cf1a0077b" Version="1.0" Language="en-US" Publisher="bluehands"/>
     <DisplayName>Switchyard</DisplayName>
     <Description xml:space="preserve">Roslyn based refactorings to support functional constructs in C#
  - Expand enum to union type
