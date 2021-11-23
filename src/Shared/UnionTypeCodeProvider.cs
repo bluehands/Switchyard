@@ -74,7 +74,8 @@ namespace Switchyard.CodeGeneration
 
             classDeclaration = classDeclaration.AddMatchMethods(unionTypeName, derivedTypes);
 
-            root = root.ReplaceNode(root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName).GetValueOrThrow(), classDeclaration);
+            var extClass = root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName);
+            root = root.ReplaceNode(extClass.GetValueOrThrow(), classDeclaration);
             
             document = document.WithSyntaxRoot(root);
             document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);

@@ -143,4 +143,23 @@ namespace Switchyard.CodeGeneration.Test
             Updated.Should().NotBeNull();
         }
     }
+
+    [TestClass]
+    public class When_executing_enum_to_union_type_with_file_scoped_namespaces : with_union_type_code_provider
+    {
+        protected override string WithSource() => @"namespace Test;
+
+    public enum Child
+    {
+        One,
+        Two
+    }    
+";
+
+        [TestMethod]
+        public void Then_it_does_not_crash()
+        {
+            Updated.Should().NotBeNull();
+        }
+    }
 }
