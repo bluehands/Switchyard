@@ -13,7 +13,7 @@ namespace Switchyard.CodeGeneration
 {
     public static class UnionTypeCodeProvider
     {
-        public static FunicularSwitch.Option<EnumDeclarationSyntax> TryGetEnumDeclaration(SyntaxToken token)
+        public static Option<EnumDeclarationSyntax> TryGetEnumDeclaration(SyntaxToken token)
         {
             if (token.Parent != null)
             {
@@ -25,19 +25,19 @@ namespace Switchyard.CodeGeneration
                             return enumDeclaration;
 
                         case ClassDeclarationSyntax classDeclaration:
-                        {
-                            var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
-                                .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
+                            {
+                                var enumDeclaration = classDeclaration.Members.OfType<EnumDeclarationSyntax>()
+                                    .FirstOrDefault(e => e.Name() == WrapEnumToClass.DefaultNestedEnumTypeName);
 
-                            if (enumDeclaration != null)
-                                return enumDeclaration;
-                            break;
-                        }
+                                if (enumDeclaration != null)
+                                    return enumDeclaration;
+                                break;
+                            }
                     }
                 }
             }
 
-            return FunicularSwitch.Option<EnumDeclarationSyntax>.None;
+            return Option<EnumDeclarationSyntax>.None;
         }
 
         public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
@@ -48,7 +48,7 @@ namespace Switchyard.CodeGeneration
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             var unionType = enumName.Name == WrapEnumToClass.DefaultNestedEnumTypeName
-                ? (ClassDeclarationSyntax) enumNode.Parent
+                ? (ClassDeclarationSyntax)enumNode.Parent
                 : Option.None<ClassDeclarationSyntax>();
             var unionTypeName = unionType.Match(u => u.QualifiedName(), () => enumNode.QualifiedName());
 
@@ -63,7 +63,7 @@ namespace Switchyard.CodeGeneration
                     var extensionClass = SyntaxFactory.ClassDeclaration(extensionClassName)
                         .WithModifiers(unionType.Match(u => u.Modifiers, () => enumNode.Modifiers))
                         .Static();
-                        
+
                     // ReSharper disable once AccessToModifiedClosure
                     root = root.AddMemberToNamespace(extensionClass, m => m is ClassDeclarationSyntax clazz && clazz.QualifiedName() == unionTypeName);
                     return extensionClass;
@@ -76,7 +76,7 @@ namespace Switchyard.CodeGeneration
 
             var extClass = root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName);
             root = root.ReplaceNode(extClass.GetValueOrThrow(), classDeclaration);
-            
+
             document = document.WithSyntaxRoot(root);
             document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
             return document;
@@ -99,10 +99,10 @@ namespace Switchyard.CodeGeneration
     public class UnionTypeOccurrence
     {
         public UnionTypeModel Model { get; }
-        public FunicularSwitch.Option<ClassDeclarationSyntax> AbstractBaseType { get; }
-        public ImmutableArray<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
+        public Option<ClassDeclarationSyntax> AbstractBaseType { get; }
+        public ImmutableArray<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> SubTypes { get; }
 
-        public UnionTypeOccurrence(UnionTypeModel model, FunicularSwitch.Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, FunicularSwitch.Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
+        public UnionTypeOccurrence(UnionTypeModel model, Option<ClassDeclarationSyntax> abstractBaseType, IEnumerable<(UnionTypeModel.SubType SubType, Option<ClassDeclarationSyntax> SubTypeDelaraction)> subTypes)
         {
             Model = model;
             AbstractBaseType = abstractBaseType;

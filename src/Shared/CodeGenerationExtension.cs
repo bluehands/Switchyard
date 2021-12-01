@@ -26,11 +26,11 @@ namespace Switchyard.CodeGeneration
         {
             var token = SyntaxFactory.Token(modifier);
             var modifiers = toRemove
-                .Select(SyntaxFactory.Token).Concat(new []{ token })
+                .Select(SyntaxFactory.Token).Concat(new[] { token })
                 .SelectMany(r => syntax.Modifiers.Where(t => t.Text.ToString() == r.Text.ToString()))
                 .Aggregate(syntax.Modifiers, (tokenList, remove) => tokenList.Remove(remove));
 
-            return (T) syntax.WithModifiers(modifiers.Add(token));
+            return (T)syntax.WithModifiers(modifiers.Add(token));
         }
 
         public static T Public<T>(this T syntax) where T : MemberDeclarationSyntax => syntax.AssertModifier(SyntaxKind.PublicKeyword, SyntaxKind.InternalKeyword, SyntaxKind.PrivateKeyword, SyntaxKind.ProtectedKeyword);
@@ -91,7 +91,7 @@ namespace Switchyard.CodeGeneration
         public static ClassDeclarationSyntax WithConstructorFromGetOnlyProperties(this ClassDeclarationSyntax classDeclaration)
         {
             var properties = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().ToImmutableList();
-            var parameterList = SyntaxFactory.ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(properties.Select(p => 
+            var parameterList = SyntaxFactory.ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(properties.Select(p =>
                 SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Name().FirstToLower())).WithType(p.Type))));
 
             if (classDeclaration.Members.OfType<ConstructorDeclarationSyntax>()
@@ -101,7 +101,7 @@ namespace Switchyard.CodeGeneration
             }
 
             var body = SyntaxFactory.Block(
-                properties.Select(p => SyntaxFactory.ParseStatement($"{p.Name()} = {p.Name().FirstToLower()};"))   
+                properties.Select(p => SyntaxFactory.ParseStatement($"{p.Name()} = {p.Name().FirstToLower()};"))
             );
 
             return classDeclaration
@@ -209,12 +209,14 @@ namespace Switchyard.CodeGeneration
                                 var ns = (NamespaceDeclarationSyntax)sn;
                                 return ns.WithMembers(ns.Members.Insert(i, m));
                             });
+#if CSharp10
                         case FileScopedNamespaceDeclarationSyntax nameSpace:
                             return new NodeWithMembers(nameSpace, nameSpace.Members, (sn, i, m) =>
                             {
                                 var ns = (FileScopedNamespaceDeclarationSyntax)sn;
                                 return ns.WithMembers(ns.Members.Insert(i, m));
                             });
+#endif
                         case ClassDeclarationSyntax clazz:
                             return new NodeWithMembers(clazz, clazz.Members, (cn, i, m) =>
                             {
@@ -319,6 +321,7 @@ namespace Switchyard.CodeGeneration
             return node.WithMembers(newMembers);
         }
 
+#if CSharp10
         public override SyntaxNode VisitFileScopedNamespaceDeclaration(FileScopedNamespaceDeclarationSyntax node)
         {
             var members = node.Members;
@@ -328,5 +331,6 @@ namespace Switchyard.CodeGeneration
 
             return node.WithMembers(newMembers);
         }
+#endif
     }
 }
