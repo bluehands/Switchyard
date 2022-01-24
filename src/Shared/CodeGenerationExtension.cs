@@ -11,6 +11,13 @@ namespace Switchyard.CodeGeneration
 {
     public static class CodeGenerationExtension
     {
+        public static bool FunicularGeneratorsReferenced(this Document document)
+        {
+            var funicularGeneratorsReferenced = document.Project.AnalyzerReferences
+                .Any(reference => reference.Id.ToString().StartsWith("FunicularSwitch.Generators"));
+            return funicularGeneratorsReferenced;
+        }
+
         public static bool IsAnyKeyWord(this string identifier) =>
             SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None
             || SyntaxFacts.GetContextualKeywordKind(identifier) != SyntaxKind.None;

@@ -37,6 +37,8 @@ namespace Switchyard.CodeGeneration
 
         static async Task<SyntaxNode> GenerateStateMachineCode(Document document, StateMachineModel model, CancellationToken cancellationToken)
         {
+            var funicularGeneratorsReferenced = document.FunicularGeneratorsReferenced();
+
             var documentRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
             documentRoot = AddBaseInterfaceIfNotExists(documentRoot, model.BaseInterfaceName);
@@ -51,13 +53,13 @@ namespace Switchyard.CodeGeneration
 
             documentRoot = GenerateStateClassesRewriter.UpdateStateClasses(documentRoot, model);
 
-            documentRoot = AddOrUpdateStateEnum(documentRoot, model);
-            documentRoot = AddOrUpdateTriggerEnum(documentRoot, model);
+            documentRoot = AddOrUpdateStateEnum(documentRoot, model, funicularGeneratorsReferenced);
+            documentRoot = AddOrUpdateTriggerEnum(documentRoot, model, funicularGeneratorsReferenced);
 
             documentRoot = UpdateTransitionMethods(documentRoot, model);
 
             documentRoot = AddOrUpdateTransitionResultClass(documentRoot, model);
-            documentRoot = AddOrUpdateExtensionClass(documentRoot, model);
+            documentRoot = AddOrUpdateExtensionClass(documentRoot, model, funicularGeneratorsReferenced);
             return documentRoot;
         }
 
@@ -98,7 +100,7 @@ namespace Switchyard.CodeGeneration
             return documentRoot;
         }
 
-        static SyntaxNode AddOrUpdateExtensionClass(SyntaxNode documentRoot, StateMachineModel names)
+        static SyntaxNode AddOrUpdateExtensionClass(SyntaxNode documentRoot, StateMachineModel names, bool funicularGeneratorsReferenced)
         {
             var applyMethod = GenerateApplyMethod(names);
 
@@ -117,24 +119,25 @@ namespace Switchyard.CodeGeneration
             classDeclaration = classDeclaration.AddOrUpdateMethod(m => m.Identifier.ToString() == StateMachineModel.ApplyMethodName && m.ParameterList.Parameters.Count == 2, applyMethod);
             classDeclaration = classDeclaration.AddOrUpdateMethod(m => m.Identifier.ToString() == StateMachineModel.DoTransitionMethodName && m.ParameterList.Parameters.Count == 2, doTransitionMethod);
 
-            classDeclaration = classDeclaration
-                .AddMatchMethods(
-                    QualifiedTypeName.NoParents(names.BaseInterfaceName),
-                    names.BaseName.FirstToLower(),
-                    $"{StateMachineModel.StatePropertyName}.{StateMachineModel.EnumPropertyName}",
-                    names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName, v.StateName.FirstToLower(),
-                            $"{names.OuterStateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateName}"))
-                        .ToImmutableList())
-                .AddMatchMethods(
-                    QualifiedTypeName.NoParents(names.ParameterInterfaceName),
-                    "parameter",
-                    $"{StateMachineModel.TriggerPropertyName}.{StateMachineModel.EnumPropertyName}",
-                    names.VertexClasses.SelectMany(v => v.Transitions
-                            .Select(t => new MatchMethods.DerivedType(t.FullParameterClassName,
-                                t.MethodName.FirstToLower(),
-                                $"{names.OuterTriggerClassName}.{StateMachineModel.NestedEnumTypeName}.{t.MethodName}")))
-                        .Distinct().ToImmutableList()
-                );
+            if (!funicularGeneratorsReferenced)
+                classDeclaration = classDeclaration
+                    .AddMatchMethods(
+                        QualifiedTypeName.NoParents(names.BaseInterfaceName),
+                        names.BaseName.FirstToLower(),
+                        $"{StateMachineModel.StatePropertyName}.{StateMachineModel.EnumPropertyName}",
+                        names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName, v.StateName.FirstToLower(),
+                                $"{names.OuterStateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateName}"))
+                            .ToImmutableList())
+                    .AddMatchMethods(
+                        QualifiedTypeName.NoParents(names.ParameterInterfaceName),
+                        "parameter",
+                        $"{StateMachineModel.TriggerPropertyName}.{StateMachineModel.EnumPropertyName}",
+                        names.VertexClasses.SelectMany(v => v.Transitions
+                                .Select(t => new MatchMethods.DerivedType(t.FullParameterClassName,
+                                    t.MethodName.FirstToLower(),
+                                    $"{names.OuterTriggerClassName}.{StateMachineModel.NestedEnumTypeName}.{t.MethodName}")))
+                            .Distinct().ToImmutableList()
+                    );
 
             return documentRoot.ReplaceNode(names.TryGetExtensionClass(documentRoot).GetValueOrThrow(), classDeclaration);
         }
@@ -274,25 +277,28 @@ namespace Switchyard.CodeGeneration
             return documentRoot;
         }
 
-        static SyntaxNode AddOrUpdateStateEnum(SyntaxNode documentRoot, StateMachineModel names)
+        static SyntaxNode AddOrUpdateStateEnum(SyntaxNode documentRoot, StateMachineModel names,
+            bool addUnionTypeAttribute)
         {
             var stateClassName = names.OuterStateClassName;
             var nestedEnumTypeName = StateMachineModel.NestedEnumTypeName;
             var enumMemberNames = names.VertexClasses.Select(v => v.StateName);
 
-            return AddOrUpdateEnumClass(documentRoot, stateClassName, nestedEnumTypeName, enumMemberNames);
+            return AddOrUpdateEnumClass(documentRoot, stateClassName, nestedEnumTypeName, enumMemberNames, addUnionTypeAttribute);
         }
 
-        static SyntaxNode AddOrUpdateTriggerEnum(SyntaxNode documentRoot, StateMachineModel names)
+        static SyntaxNode AddOrUpdateTriggerEnum(SyntaxNode documentRoot, StateMachineModel names,
+            bool addUnionTypeAttribute)
         {
             var nestedEnumTypeName = StateMachineModel.NestedEnumTypeName;
             var enumMemberNames = names.VertexClasses.SelectMany(v => v.Transitions.Select(t => t.MethodName)).Distinct();
 
-            return AddOrUpdateEnumClass(documentRoot, names.OuterTriggerClassName, nestedEnumTypeName, enumMemberNames);
+            return AddOrUpdateEnumClass(documentRoot, names.OuterTriggerClassName, nestedEnumTypeName, enumMemberNames, addUnionTypeAttribute);
         }
 
-        static SyntaxNode AddOrUpdateEnumClass(SyntaxNode documentRoot, string stateClassName, string nestedEnumTypeName,
-            IEnumerable<string> enumMemberNames)
+        static SyntaxNode AddOrUpdateEnumClass(SyntaxNode documentRoot, string stateClassName,
+            string nestedEnumTypeName,
+            IEnumerable<string> enumMemberNames, bool addUnionTypeAttribute)
         {
             var stateType = documentRoot.DescendantNodes().OfType<ClassDeclarationSyntax>()
                 .FirstOrDefault(n => n.Name() == stateClassName);
@@ -305,7 +311,8 @@ namespace Switchyard.CodeGeneration
                 var newEnumDeclaration = SyntaxFactory.EnumDeclaration(stateClassName)
                     .AddMembers(enumMemberNames.Select(SyntaxFactory.EnumMemberDeclaration).ToArray()).Public();
                 documentRoot = documentRoot.AddMemberToNamespace(newEnumDeclaration);
-                documentRoot = documentRoot.GenerateEnumClass(QualifiedTypeName.NoParents(stateClassName), Option<ClassDeclarationSyntax>.None);
+                documentRoot = documentRoot.GenerateEnumClass(QualifiedTypeName.NoParents(stateClassName), 
+                    Option<ClassDeclarationSyntax>.None, addUnionTypeAttribute);
             }
             else
             {
@@ -314,7 +321,7 @@ namespace Switchyard.CodeGeneration
                         enumMemberNames.Select(SyntaxFactory.EnumMemberDeclaration).ToArray())
                     );
                 documentRoot = documentRoot.ReplaceNode(oldEnumDeclaration, newEnumDeclaration)
-                    .UpdateEnumClass(QualifiedTypeName.NoParents(stateClassName));
+                    .UpdateEnumClass(QualifiedTypeName.NoParents(stateClassName), addUnionTypeAttribute);
             }
 
             return documentRoot;

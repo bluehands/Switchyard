@@ -16,6 +16,8 @@ namespace Switchyard
     {
         public sealed override async Task ComputeRefactoringsAsync(CodeRefactoringContext context)
         {
+            CurrentCompilationOptions.Nullability = context.Document.Project.CompilationOptions?.NullableContextOptions.Equals(NullableContextOptions.Enable) ?? true;
+
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindToken(context.Span.Start);
 

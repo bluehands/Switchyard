@@ -11,6 +11,11 @@ using Microsoft.CodeAnalysis.Formatting;
 
 namespace Switchyard.CodeGeneration
 {
+    public static class CurrentCompilationOptions
+    {
+        public static bool Nullability = false;
+    }
+
     public static class UnionTypeCodeProvider
     {
         public static Option<EnumDeclarationSyntax> TryGetEnumDeclaration(SyntaxToken token)
@@ -42,6 +47,8 @@ namespace Switchyard.CodeGeneration
 
         public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
+            var funicularGeneratorsReferenced = document.FunicularGeneratorsReferenced();
+
             var enumName = enumNode.QualifiedName();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);
 
@@ -52,10 +59,21 @@ namespace Switchyard.CodeGeneration
                 : Option.None<ClassDeclarationSyntax>();
             var unionTypeName = unionType.Match(u => u.QualifiedName(), () => enumNode.QualifiedName());
 
-            root = root.GenerateEnumClass(enumName, unionType);
+            root = root.GenerateEnumClass(enumName, unionType, funicularGeneratorsReferenced);
 
             var extensionClassName = $"{unionTypeName.QualifiedName("")}Extension";
 
+            if (!funicularGeneratorsReferenced)
+                root = AddMatchExtensions(enumNode, root, extensionClassName, unionType, unionTypeName, caseTypeNames);
+
+            document = document.WithSyntaxRoot(root);
+            document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
+            return document;
+        }
+
+        static SyntaxNode AddMatchExtensions(EnumDeclarationSyntax enumNode, SyntaxNode root, string extensionClassName,
+            Option<ClassDeclarationSyntax> unionType, QualifiedTypeName unionTypeName, IEnumerable<string> caseTypeNames)
+        {
             var classDeclaration = root
                 .TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName)
                 .Match(ext => ext, () =>
@@ -65,21 +83,20 @@ namespace Switchyard.CodeGeneration
                         .Static();
 
                     // ReSharper disable once AccessToModifiedClosure
-                    root = root.AddMemberToNamespace(extensionClass, m => m is ClassDeclarationSyntax clazz && clazz.QualifiedName() == unionTypeName);
+                    root = root.AddMemberToNamespace(extensionClass,
+                        m => m is ClassDeclarationSyntax clazz && clazz.QualifiedName() == unionTypeName);
                     return extensionClass;
                 });
 
 
-            var derivedTypes = caseTypeNames.Select(n => new MatchMethods.DerivedType($"{unionTypeName}.{n}_", n.FirstToLower(), $"{unionTypeName}.{WrapEnumToClass.DefaultNestedEnumTypeName}.{n}")).ToImmutableList();
+            var derivedTypes = caseTypeNames.Select(n => new MatchMethods.DerivedType($"{unionTypeName}.{n}_", n.FirstToLower(),
+                $"{unionTypeName}.{WrapEnumToClass.DefaultNestedEnumTypeName}.{n}")).ToImmutableList();
 
             classDeclaration = classDeclaration.AddMatchMethods(unionTypeName, derivedTypes);
 
             var extClass = root.TryGetFirstDescendant<ClassDeclarationSyntax>(n => n.Name() == extensionClassName);
             root = root.ReplaceNode(extClass.GetValueOrThrow(), classDeclaration);
-
-            document = document.WithSyntaxRoot(root);
-            document = await Formatter.FormatAsync(document, cancellationToken: cancellationToken);
-            return document;
+            return root;
         }
     }
 

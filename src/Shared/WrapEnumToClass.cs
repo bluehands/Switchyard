@@ -4,6 +4,7 @@ using FunicularSwitch;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Switchyard.CodeGeneration
 {
@@ -12,14 +13,16 @@ namespace Switchyard.CodeGeneration
         public const string DefaultNestedEnumTypeName = "UnionCases";
         public const string DefaultEnumPropertyName = "UnionCase";
 
-        public static SyntaxNode GenerateEnumClass(this SyntaxNode node, QualifiedTypeName enumTypeName, Option<ClassDeclarationSyntax> unionTypeDeclaration, string nestedEnumTypeName = DefaultNestedEnumTypeName, string enumPropertyName = DefaultEnumPropertyName)
+        public static SyntaxNode GenerateEnumClass(this SyntaxNode node, QualifiedTypeName enumTypeName,
+            Option<ClassDeclarationSyntax> unionTypeDeclaration, bool addUnionTypeAttribute,
+            string nestedEnumTypeName = DefaultNestedEnumTypeName, string enumPropertyName = DefaultEnumPropertyName)
         {
             var withEnumNested = unionTypeDeclaration.Match(u => node, () => new EnumToClassRewriter(enumTypeName, nestedEnumTypeName, enumPropertyName).Visit(node));
-            return withEnumNested.UpdateEnumClass(unionTypeDeclaration.Match(u => u.QualifiedName(), () => enumTypeName));
+            return withEnumNested.UpdateEnumClass(unionTypeDeclaration.Match(u => u.QualifiedName(), () => enumTypeName), addUnionTypeAttribute);
         }
 
-        public static SyntaxNode UpdateEnumClass(this SyntaxNode node, QualifiedTypeName unionTypeName, string enumPropertyName = DefaultNestedEnumTypeName) => 
-            new AddEnumClassMembersRewriter(unionTypeName, enumPropertyName).Visit(node);
+        public static SyntaxNode UpdateEnumClass(this SyntaxNode node, QualifiedTypeName unionTypeName, bool addUnionTypeAttribute, string enumPropertyName = DefaultNestedEnumTypeName) =>
+            new AddEnumClassMembersRewriter(unionTypeName, addUnionTypeAttribute, enumPropertyName).Visit(node);
 
         public class EnumToClassRewriter : CSharpSyntaxRewriter
         {
@@ -38,42 +41,42 @@ namespace Switchyard.CodeGeneration
             {
                 var nodeName = node.QualifiedName();
 
-                if (nodeName != m_EnumTypeName ) return base.VisitEnumDeclaration(node);
+                if (nodeName != m_EnumTypeName) return base.VisitEnumDeclaration(node);
 
-                var classDeclaration = SyntaxFactory.ClassDeclaration(m_EnumTypeName.Name)
+                var classDeclaration = ClassDeclaration(m_EnumTypeName.Name)
                     .WithModifiers(node.Modifiers)
                     .Abstract()
                     .AddMembers(node
-                        .WithIdentifier(SyntaxFactory.ParseToken(m_NestedEnumTypeName))
+                        .WithIdentifier(ParseToken(m_NestedEnumTypeName))
                         .Internal())
                     .AddProperty(m_NestedEnumTypeName, m_EnumPropertyName, p => p.Internal())
-                    .AddMembers(SyntaxFactory.ConstructorDeclaration(node.Identifier.WithoutTrivia())
-                        .AddParameterListParameters(SyntaxFactory.Parameter(SyntaxFactory.ParseToken(m_EnumPropertyName.FirstToLower()))
-                            .WithType(SyntaxFactory.ParseTypeName(m_NestedEnumTypeName)))
+                    .AddMembers(ConstructorDeclaration(node.Identifier.WithoutTrivia())
+                        .AddParameterListParameters(Parameter(ParseToken(m_EnumPropertyName.FirstToLower()))
+                            .WithType(ParseTypeName(m_NestedEnumTypeName)))
                         .WithExpressionBody($"{m_EnumPropertyName} = {m_EnumPropertyName.FirstToLower()}")
                     )
-                    .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("string"), "ToString")
+                    .AddMembers(MethodDeclaration(ParseTypeName("string"), "ToString")
                         .Public()
                         .Override()
                         .WithExpressionBody($"Enum.GetName(typeof({m_NestedEnumTypeName}), {m_EnumPropertyName}) ?? {DefaultEnumPropertyName}.ToString()")
                     )
-                    .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "Equals")
-                        .AddParameterListParameters(SyntaxFactory.Parameter(SyntaxFactory.ParseToken("other")).WithType(SyntaxFactory.ParseTypeName(m_EnumTypeName.Name)))
+                    .AddMembers(MethodDeclaration(ParseTypeName("bool"), "Equals")
+                        .AddParameterListParameters(Parameter(ParseToken("other")).WithType(ParseTypeName(m_EnumTypeName.Name)))
                         .WithExpressionBody($"{m_EnumPropertyName} == other.{m_EnumPropertyName}"))
-                    .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("bool"), "Equals")
+                    .AddMembers(MethodDeclaration(ParseTypeName("bool"), "Equals")
                         .Public()
                         .Override()
-                        .AddParameterListParameters(SyntaxFactory.Parameter(SyntaxFactory.ParseToken("obj")).WithType(SyntaxFactory.ParseTypeName("object")))
-                        .WithBody(SyntaxFactory.Block(
-                            SyntaxFactory.ParseStatement("if (ReferenceEquals(null, obj)) return false;").WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
-                            SyntaxFactory.ParseStatement("if (ReferenceEquals(this, obj)) return true;").WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
-                            SyntaxFactory.ParseStatement("if (obj.GetType() != GetType()) return false;").WithTrailingTrivia(SyntaxFactory.CarriageReturnLineFeed),
-                            SyntaxFactory.ParseStatement($"return Equals(({m_EnumTypeName.Name}) obj);")
+                        .AddParameterListParameters(Parameter(ParseToken("obj")).WithType(CurrentCompilationOptions.Nullability ? ParseTypeName("object?") : ParseTypeName("object")))
+                        .WithBody(Block(
+                            ParseStatement("if (ReferenceEquals(null, obj)) return false;").WithTrailingTrivia(CarriageReturnLineFeed),
+                            ParseStatement("if (ReferenceEquals(this, obj)) return true;").WithTrailingTrivia(CarriageReturnLineFeed),
+                            ParseStatement("if (obj.GetType() != GetType()) return false;").WithTrailingTrivia(CarriageReturnLineFeed),
+                            ParseStatement($"return Equals(({m_EnumTypeName.Name}) obj);")
                         )))
-                    .AddMembers(SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName("int"), "GetHashCode")
+                    .AddMembers(MethodDeclaration(ParseTypeName("int"), "GetHashCode")
                         .Public()
                         .Override()
-                        .WithParameterList(SyntaxFactory.ParameterList())
+                        .WithParameterList(ParameterList())
                         .WithExpressionBody($"(int) {m_EnumPropertyName}")
                     );
 
@@ -83,12 +86,16 @@ namespace Switchyard.CodeGeneration
 
         public class AddEnumClassMembersRewriter : CSharpSyntaxRewriter
         {
+            const string UnionTypeAttributeName = "FunicularSwitch.Generators.UnionType";
             readonly QualifiedTypeName m_UnionTypeName;
+            readonly bool m_AddUnionTypeAttribute;
             readonly string m_NestedEnumTypeName;
 
-            public AddEnumClassMembersRewriter(QualifiedTypeName unionTypeName, string nestedEnumTypeName = DefaultNestedEnumTypeName)
+            public AddEnumClassMembersRewriter(QualifiedTypeName unionTypeName, bool addUnionTypeAttribute,
+                string nestedEnumTypeName = DefaultNestedEnumTypeName)
             {
                 m_UnionTypeName = unionTypeName;
+                m_AddUnionTypeAttribute = addUnionTypeAttribute;
                 m_NestedEnumTypeName = nestedEnumTypeName;
             }
 
@@ -98,7 +105,7 @@ namespace Switchyard.CodeGeneration
                 {
                     var members = classDeclaration.Members;
                     var staticCaseIndex = classDeclaration.Members.LastIndexOf(m =>
-                        m.Modifiers.Select(_ => _.ToString()).Except(new[] {"readonly"}).SequenceEqual(new[] {"public", "static"}));
+                        m.Modifiers.Select(_ => _.ToString()).Except(new[] { "readonly" }).SequenceEqual(new[] { "public", "static" }));
                     return classDeclaration.WithMembers(members.InsertRange(staticCaseIndex + 1, toAdd));
                 }
 
@@ -116,7 +123,7 @@ namespace Switchyard.CodeGeneration
                 if (node.QualifiedName() == m_UnionTypeName)
                 {
                     var enumDeclaration = node.DescendantNodes().OfType<EnumDeclarationSyntax>().FirstOrDefault(n => n.Name() == m_NestedEnumTypeName);
-                    
+
                     if (enumDeclaration != null)
                     {
                         var caseDeclarationMembers = enumDeclaration.Members.SelectMany(enumMember =>
@@ -129,15 +136,15 @@ namespace Switchyard.CodeGeneration
                             {
                                 var enumMemberClassName = GetEnumMemberClassName(enumMember.Identifier.ToString());
 
-                                var caseDeclaration = SyntaxFactory.ClassDeclaration(enumMemberClassName)
+                                var caseDeclaration = ClassDeclaration(enumMemberClassName)
                                     .Public()
-                                    .AddBaseListTypes(SyntaxFactory.SimpleBaseType(SyntaxFactory.ParseTypeName(m_UnionTypeName.Name)))
-                                    .AddMembers(SyntaxFactory.ConstructorDeclaration(enumMemberClassName)
-                                        .WithInitializer(SyntaxFactory.ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
-                                            .AddArgumentListArguments(SyntaxFactory.Argument(SyntaxFactory.ParseExpression($"{m_NestedEnumTypeName}.{enumMember.Identifier}")))
+                                    .AddBaseListTypes(SimpleBaseType(ParseTypeName(m_UnionTypeName.Name)))
+                                    .AddMembers(ConstructorDeclaration(enumMemberClassName)
+                                        .WithInitializer(ConstructorInitializer(SyntaxKind.BaseConstructorInitializer)
+                                            .AddArgumentListArguments(Argument(ParseExpression($"{m_NestedEnumTypeName}.{enumMember.Identifier}")))
                                         )
                                         .Public()
-                                        .WithBody(SyntaxFactory.Block())
+                                        .WithBody(Block())
                                     );
                                 return Option.Some(caseDeclaration);
                             }
@@ -158,35 +165,34 @@ namespace Switchyard.CodeGeneration
 
                             var constructorParameters = existingCaseDeclaration
                                                              .Members.OfType<ConstructorDeclarationSyntax>()
-                                                             .FirstOrDefault()?.ParameterList ?? SyntaxFactory.ParameterList();
+                                                             .FirstOrDefault()?.ParameterList ?? ParameterList();
 
                             if (constructorParameters.Parameters.Count > 0)
                             {
-                                return (MemberDeclarationSyntax)SyntaxFactory.MethodDeclaration(
-                                        SyntaxFactory.ParseTypeName(m_UnionTypeName.Name),
-                                        SyntaxFactory.ParseToken(enumMember))
+                                return (MemberDeclarationSyntax)MethodDeclaration(
+                                        ParseTypeName(m_UnionTypeName.Name),
+                                        ParseToken(enumMember))
                                     .WithParameterList(constructorParameters)
-                                    .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(
-                                        SyntaxFactory.ObjectCreationExpression(
-                                            SyntaxFactory.ParseTypeName(GetEnumMemberClassName(enumMember)),
-                                            SyntaxFactory.ArgumentList(
+                                    .WithExpressionBody(ArrowExpressionClause(
+                                        ObjectCreationExpression(
+                                            ParseTypeName(GetEnumMemberClassName(enumMember)),
+                                            ArgumentList(
                                                 new SeparatedSyntaxList<ArgumentSyntax>().AddRange(
                                                     constructorParameters.Parameters.Select(p =>
-                                                        SyntaxFactory.Argument(SyntaxFactory.ParseExpression(p.Identifier.ToString())))))
+                                                        Argument(ParseExpression(p.Identifier.ToString())))))
                                             , null)))
-                                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken))
+                                    .WithSemicolonToken(Token(SyntaxKind.SemicolonToken))
                                     .Public()
                                     .Static();
                             }
 
-                            return SyntaxFactory.FieldDeclaration(
-                                    SyntaxFactory.VariableDeclaration(SyntaxFactory.ParseTypeName(m_UnionTypeName.Name))
-                                        .AddVariables(SyntaxFactory
-                                            .VariableDeclarator(SyntaxFactory.ParseToken(enumMember))
-                                            .WithInitializer(SyntaxFactory.EqualsValueClause(
-                                                SyntaxFactory.ObjectCreationExpression(
-                                                    SyntaxFactory.ParseTypeName(GetEnumMemberClassName(enumMember)),
-                                                    SyntaxFactory.ArgumentList(), null)))
+                            return FieldDeclaration(
+                                    VariableDeclaration(ParseTypeName(m_UnionTypeName.Name))
+                                        .AddVariables(VariableDeclarator(ParseToken(enumMember))
+                                            .WithInitializer(EqualsValueClause(
+                                                ObjectCreationExpression(
+                                                    ParseTypeName(GetEnumMemberClassName(enumMember)),
+                                                    ArgumentList(), null)))
                                         )
                                 )
                                 .Public()
@@ -210,11 +216,41 @@ namespace Switchyard.CodeGeneration
 
                         node = node.WithMembers(node.Members.InsertRange(0, staticCaseMembers));
 
+                        node = AddUnionTypeAttribute(node);
+
                         return node;
                     }
                 }
 
                 return base.VisitClassDeclaration(node);
+            }
+
+            ClassDeclarationSyntax AddUnionTypeAttribute(ClassDeclarationSyntax node)
+            {
+                if (m_AddUnionTypeAttribute && node.AttributeLists
+                        .SelectMany(l => l.Attributes)
+                        .All(a => a.Name.ToString() != UnionTypeAttributeName))
+                {
+                    node = node.WithAttributeLists(
+                        SingletonList(
+                            AttributeList(
+                                SingletonSeparatedList(
+                                        Attribute(
+                                                QualifiedName(
+                                                QualifiedName(
+                                                    IdentifierName("FunicularSwitch"),
+                                                    IdentifierName("Generators")
+                                                    ),
+                                                    IdentifierName("UnionType")
+                                                )
+                                            )
+                                        )
+                            )
+                        )
+                    );
+                }
+
+                return node;
             }
 
             static string GetEnumMemberClassName(string memberName) => $"{memberName}_";

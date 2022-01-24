@@ -22,7 +22,7 @@ namespace Switchyard.CodeGeneration
                 EnumMember = enumMember;
             }
 
-            bool Equals(DerivedType other) => String.Equals(TypeName, other.TypeName) && String.Equals(ParameterName, other.ParameterName) && String.Equals(EnumMember, other.EnumMember);
+            bool Equals(DerivedType other) => string.Equals(TypeName, other.TypeName) && string.Equals(ParameterName, other.ParameterName) && string.Equals(EnumMember, other.EnumMember);
 
             public override bool Equals(object obj)
             {
