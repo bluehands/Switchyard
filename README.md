@@ -11,7 +11,7 @@ Refactorings interact nicely with the [FunicularSwitch.Generators](https://www.n
 
 ### Expand enum to union type
 
-Imagine classes representing an ftp connection configuration like that:
+**Motivation:** Imagine classes representing an ftp connection configuration like:
 
 ```csharp
 public enum ConnectionType
@@ -66,7 +66,7 @@ With the config class implemented like that every consumer has to switch on the 
 
 One solution to the problem is so called union types or discriminated unions, basically types that can be one thing or an other. Those types are supported natively in F# an other functional languages. In C# they have to be implemented by hand, and that is where the refactoring comes in.
 
-Start with an enum like that:
+**Usage:** Start with an enum like that:
 
 ```csharp
 public enum SFtpConfig
@@ -76,7 +76,7 @@ public enum SFtpConfig
 }
 ```
 
-As soon as the cursor is inside of an enum declaration, refactoring 'Expand enum to untion type' is offered, which will change the enum declaration to the following code (equality and internal members omitted):
+As soon as the cursor is inside of an enum declaration, refactoring 'Expand enum to union type' is offered, which will change the enum declaration to the following code (equality and internal members omitted):
 
 ```csharp
 
@@ -155,12 +155,12 @@ public class SFtpClient
     return config.Match(
       withPassword => ConnectWithPassword(withPassword.User, withPassword.Password),
       withKeyFile => ConnectWithKeyFile(withKeyFile.User, withKeyFile.KeyFilePath)
-      );
+    );
   }
 
-  FtpConnection ConnectWithKeyFile(string user, string keyFilePath) => throw new NotImplementedException();
+  FtpConnection ConnectWithKeyFile(string user, string keyFilePath) => ...;
 
-  FtpConnection ConnectWithPassword(string user, string password) => throw new NotImplementedException();
+  FtpConnection ConnectWithPassword(string user, string password) => ...;
 }
 ```
 
@@ -170,7 +170,7 @@ To add a case to the union just add another entry to the UnionCases nested enum 
 
 ### Generate 'With' extension
 
-Generate an extension method for an immutable type to easly create copies of that type with specific properties changed. The extension is inspired by F#s with operator. For this to work you need an Option class (for example from [FunicluarSwitch](https://www.nuget.org/packages/FunicularSwitch/) package) and a construtor that initializes the objects (read only) properties:
+Generate an extension method for an immutable type to easly create copies of that type with specific properties changed. The extension is inspired by F#s with operator (and was built prior to introduction of records in C# ;)). For this to work you need an Option class (for example from [FunicluarSwitch](https://www.nuget.org/packages/FunicularSwitch/) package) and a construtor that initializes the objects (read only) properties:
 
 ```csharp
 public class MyImmutableObject
