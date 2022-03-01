@@ -79,21 +79,21 @@ public enum SFtpConfig
 As soon as the cursor is inside of an enum declaration, refactoring 'Expand enum to union type' is offered, which will change the enum declaration to the following code (equality and internal members omitted):
 
 ```csharp
-
 public abstract class SFtpConfig
 {
   public static readonly SFtpConfig Password = new Password_();
   public static readonly SFtpConfig KeyFile = new KeyFile_();
+
   public class Password_ : SFtpConfig
   {
-    public Password_() : base(Ids.Password)
+    public Password_() : base(UnionCases.Password)
     {
     }
   }
 
   public class KeyFile_ : SFtpConfig
   {
-    public KeyFile_() : base(Ids.KeyFile)
+    public KeyFile_() : base(UnionCases.KeyFile)
     {
     }
   }
@@ -112,30 +112,36 @@ public abstract class SFtpConfig
 {
   public static SFtpConfig Password(string user, string password) => new Password_(user, password);
   public static SFtpConfig KeyFile(string user, string keyFilePath) => new KeyFile_(user, keyFilePath);
-  
+
   public string User { get; }
-  
+
+  SFtpConfig(UnionCases unionCase, string user)
+  {
+    UnionCase = unionCase;
+    User = user;
+  }
+
   public class Password_ : SFtpConfig
   {
     public string Password { get; }
 
-    public Password_(string user, string password) : base(UnionCases.Password, user) => Password = password;    
+    public Password_(string user, string password) : base(UnionCases.Password, user) => Password = password;
   }
 
   public class KeyFile_ : SFtpConfig
   {
     public string KeyFilePath { get; }
 
-    public KeyFile_(string user, string privateKeyPath) : base(UnionCases.KeyFile, user) => PrivateKeyPath = privateKeyPath;
+    public KeyFile_(string user, string keyFilePath) : base(UnionCases.KeyFile, user) => KeyFilePath = keyFilePath;
   }
   
-  public string User { get; }
-
-  SFtpConfig(Ids id, string user)
+  internal enum UnionCases
   {
-    Id = id;
-    User = user;
+    Password,
+    KeyFile
   }
+  
+  internal UnionCases UnionCase { get; }
   
   // equality and internal members ....
 }
