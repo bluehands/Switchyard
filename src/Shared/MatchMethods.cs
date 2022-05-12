@@ -51,7 +51,7 @@ namespace Switchyard.CodeGeneration
 
         public static ClassDeclarationSyntax AddMatchMethods(this ClassDeclarationSyntax classDeclaration, QualifiedTypeName unionTypeName, ImmutableList<DerivedType> derivedTypes)
         {
-            var baseTypeParameterName = unionTypeName.Name.FirstToLower();
+            var baseTypeParameterName = unionTypeName.Name.ToParameterName();
             var switchEnumMember = WrapEnumToClass.DefaultEnumPropertyName;
 
             return AddMatchMethods(classDeclaration, unionTypeName, baseTypeParameterName, switchEnumMember, derivedTypes);

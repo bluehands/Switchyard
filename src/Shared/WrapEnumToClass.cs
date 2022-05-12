@@ -19,7 +19,12 @@ namespace Switchyard.CodeGeneration
 			string nestedEnumTypeName = DefaultNestedEnumTypeName, string enumPropertyName = DefaultEnumPropertyName)
 		{
 			var withEnumNested = unionTypeDeclaration.Match(u => node, () => new EnumToClassRewriter(enumTypeName, nestedEnumTypeName, enumPropertyName).Visit(node));
-			return withEnumNested.UpdateEnumClass(unionTypeDeclaration.Match(u => u.QualifiedName(), () => enumTypeName), addUnionTypeAttribute);
+			withEnumNested = withEnumNested.UpdateEnumClass(unionTypeDeclaration.Match(u => u.QualifiedName(), () => enumTypeName), addUnionTypeAttribute);
+			if (node is CompilationUnitSyntax compilationUnitSyntax)
+			{
+
+			}
+			return withEnumNested;
 		}
 
 		public static SyntaxNode UpdateEnumClass(this SyntaxNode node, QualifiedTypeName unionTypeName, bool addUnionTypeAttribute, string enumPropertyName = DefaultNestedEnumTypeName) =>
@@ -52,9 +57,9 @@ namespace Switchyard.CodeGeneration
 						.Internal())
 					.AddProperty(m_NestedEnumTypeName, m_EnumPropertyName, p => p.Internal())
 					.AddMembers(ConstructorDeclaration(node.Identifier.WithoutTrivia())
-						.AddParameterListParameters(Parameter(ParseToken(m_EnumPropertyName.FirstToLower()))
+						.AddParameterListParameters(Parameter(ParseToken(m_EnumPropertyName.ToParameterName()))
 							.WithType(ParseTypeName(m_NestedEnumTypeName)))
-						.WithExpressionBody($"{m_EnumPropertyName} = {m_EnumPropertyName.FirstToLower()}")
+						.WithExpressionBody($"{m_EnumPropertyName} = {m_EnumPropertyName.ToParameterName()}")
 					)
 					.AddMembers(MethodDeclaration(ParseTypeName("string"), "ToString")
 						.Public()

@@ -1,0 +1,26 @@
+﻿using System;
+
+namespace Test
+{
+    //fake Option class to avoid real FunicularSwitch reference in Test
+    public class Option<T>
+    {
+        public T1 Match<T1>(Func<T, T1> some, Func<T1> none) => throw new NotImplementedException();
+    }
+
+    public class Dummy
+    {
+        public string Prop1 { get; }
+        public bool Prop2 { get; }
+
+        public Dummy(string prop1, bool prop2)
+        {
+            Prop1 = prop1;
+            Prop2 = prop2;
+        }
+    }
+    public static class DummyWithExtension
+    {
+        public static Dummy With(this Dummy dummy, Option<string> prop1 = null, Option<bool> prop2 = null) => new Dummy(prop1: prop1 != null ? prop1.Match(x => x, () => dummy.Prop1) : dummy.Prop1, prop2: prop2 != null ? prop2.Match(x => x, () => dummy.Prop2) : dummy.Prop2);
+    }
+}

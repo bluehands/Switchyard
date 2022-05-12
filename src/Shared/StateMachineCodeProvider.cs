@@ -123,9 +123,9 @@ namespace Switchyard.CodeGeneration
                 classDeclaration = classDeclaration
                     .AddMatchMethods(
                         QualifiedTypeName.NoParents(names.BaseInterfaceName),
-                        names.BaseName.FirstToLower(),
+                        names.BaseName.ToParameterName(),
                         $"{StateMachineModel.StatePropertyName}.{StateMachineModel.EnumPropertyName}",
-                        names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName, v.StateName.FirstToLower(),
+                        names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName, v.StateName.ToParameterName(),
                                 $"{names.OuterStateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateName}"))
                             .ToImmutableList())
                     .AddMatchMethods(
@@ -134,7 +134,7 @@ namespace Switchyard.CodeGeneration
                         $"{StateMachineModel.TriggerPropertyName}.{StateMachineModel.EnumPropertyName}",
                         names.VertexClasses.SelectMany(v => v.Transitions
                                 .Select(t => new MatchMethods.DerivedType(t.FullParameterClassName,
-                                    t.MethodName.FirstToLower(),
+                                    t.MethodName.ToParameterName(),
                                     $"{names.OuterTriggerClassName}.{StateMachineModel.NestedEnumTypeName}.{t.MethodName}")))
                             .Distinct().ToImmutableList()
                     );
@@ -169,7 +169,7 @@ namespace Switchyard.CodeGeneration
         static MethodDeclarationSyntax GenerateApplyMethod(string methodName, StateMachineModel names, TypeSyntax returnType,
             Func<StateMachineModel.VertexClass, StateMachineModel.TransitionMethod, string, string, StatementSyntax> generateSwitchStatement, Func<StateMachineModel.VertexClass, string, string, StatementSyntax> generateDefaultStatement)
         {
-            var baseTypeParameterName = names.BaseName.FirstToLower();
+            var baseTypeParameterName = names.BaseName.ToParameterName();
             var parameterParameterName = "parameter";
             var baseType = SyntaxFactory.ParseTypeName(names.BaseInterfaceName);
 
@@ -254,7 +254,7 @@ namespace Switchyard.CodeGeneration
                     ))
                     .WithParameterList(SyntaxFactory.ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(
                         parameterClassProperties.Select(p =>
-                            SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Identifier.ToString().FirstToLower())).WithType(p.Type))
+                            SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Identifier.ToString().ToParameterName())).WithType(p.Type))
                         ))
                     );
 

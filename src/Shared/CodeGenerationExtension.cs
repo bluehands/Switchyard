@@ -22,6 +22,11 @@ namespace Switchyard.CodeGeneration
             SyntaxFacts.GetKeywordKind(identifier) != SyntaxKind.None
             || SyntaxFacts.GetContextualKeywordKind(identifier) != SyntaxKind.None;
 
+        public static string ToParameterName(this string name)
+        {
+	        var parameterName = name.FirstToLower();
+	        return parameterName.IsAnyKeyWord() ? $"@{parameterName}" : parameterName;
+        }
 
         public static SyntaxNode AddMemberToNamespace(this SyntaxNode node, MemberDeclarationSyntax member, Func<MemberDeclarationSyntax, bool> afterMember = null)
         {
@@ -99,7 +104,7 @@ namespace Switchyard.CodeGeneration
         {
             var properties = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().ToImmutableList();
             var parameterList = SyntaxFactory.ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(properties.Select(p =>
-                SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Name().FirstToLower())).WithType(p.Type))));
+                SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Name().ToParameterName())).WithType(p.Type))));
 
             if (classDeclaration.Members.OfType<ConstructorDeclarationSyntax>()
                 .Any(c => c.ParameterList.Parameters.Count == parameterList.Parameters.Count && c.ParameterList.Parameters.Zip(parameterList.Parameters, (p1, p2) => p1.Type.Name() == p2.Type.Name()).All(b => b)))
@@ -108,7 +113,7 @@ namespace Switchyard.CodeGeneration
             }
 
             var body = SyntaxFactory.Block(
-                properties.Select(p => SyntaxFactory.ParseStatement($"{p.Name()} = {p.Name().FirstToLower()};"))
+                properties.Select(p => SyntaxFactory.ParseStatement($"{p.Name()} = {p.Name().ToParameterName()};"))
             );
 
             return classDeclaration

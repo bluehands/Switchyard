@@ -1,0 +1,92 @@
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Test;
+
+public abstract class Operator
+{
+    public static readonly Operator Event = new Event_();
+    public static readonly Operator Int = new Int_();
+    public static readonly Operator Object = new Object_();
+
+    public class Event_ : Operator
+    {
+        public Event_() : base(UnionCases.Event)
+        {
+        }
+    }
+
+    public class Int_ : Operator
+    {
+        public Int_() : base(UnionCases.Int)
+        {
+        }
+    }
+
+    public class Object_ : Operator
+    {
+        public Object_() : base(UnionCases.Object)
+        {
+        }
+    }
+
+    internal enum UnionCases
+    {
+        Event,
+        Int,
+        Object
+    }
+
+    internal UnionCases UnionCase { get; }
+    Operator(UnionCases unionCase) => UnionCase = unionCase;
+
+    public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+    bool Equals(Operator other) => UnionCase == other.UnionCase;
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Operator)obj);
+    }
+
+    public override int GetHashCode() => (int)UnionCase;
+}
+
+public static class OperatorExtension
+{
+    public static T Match<T>(this Operator @operator, Func<Operator.Event_, T> @event, Func<Operator.Int_, T> @int, Func<Operator.Object_, T> @object)
+    {
+        switch (@operator.UnionCase)
+        {
+            case Operator.UnionCases.Event:
+                return @event((Operator.Event_)@operator);
+            case Operator.UnionCases.Int:
+                return @int((Operator.Int_)@operator);
+            case Operator.UnionCases.Object:
+                return @object((Operator.Object_)@operator);
+            default:
+                throw new ArgumentException($"Unknown type derived from Operator: {@operator.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Operator @operator, Func<Operator.Event_, Task<T>> @event, Func<Operator.Int_, Task<T>> @int, Func<Operator.Object_, Task<T>> @object)
+    {
+        switch (@operator.UnionCase)
+        {
+            case Operator.UnionCases.Event:
+                return await @event((Operator.Event_)@operator).ConfigureAwait(false);
+            case Operator.UnionCases.Int:
+                return await @int((Operator.Int_)@operator).ConfigureAwait(false);
+            case Operator.UnionCases.Object:
+                return await @object((Operator.Object_)@operator).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type derived from Operator: {@operator.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Task<Operator> @operator, Func<Operator.Event_, T> @event, Func<Operator.Int_, T> @int, Func<Operator.Object_, T> @object) => (await @operator.ConfigureAwait(false)).Match(@event, @int, @object);
+    public static async Task<T> Match<T>(this Task<Operator> @operator, Func<Operator.Event_, Task<T>> @event, Func<Operator.Int_, Task<T>> @int, Func<Operator.Object_, Task<T>> @object) => await(await @operator.ConfigureAwait(false)).Match(@event, @int, @object).ConfigureAwait(false);
+}

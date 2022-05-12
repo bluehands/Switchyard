@@ -82,7 +82,7 @@ namespace Switchyard.CodeGeneration
         {
             var sb = new StringBuilder($"new {fullClassName}(");
 
-            var thisParameterName = classDeclaration.Name().FirstToLower();
+            var thisParameterName = classDeclaration.Name().ToParameterName();
 
             var lines = constructorParameters.Parameters
                 .Select(p =>
@@ -103,7 +103,7 @@ namespace Switchyard.CodeGeneration
             BaseTypeDeclarationSyntax classDeclarationSyntax, BaseParameterListSyntax constructorParameterList)
         {
             var thisTypeName = fullClassName;
-            var thisParameters = SyntaxFactory.Parameter(SyntaxFactory.Identifier(classDeclarationSyntax.Name().FirstToLower()))
+            var thisParameters = SyntaxFactory.Parameter(SyntaxFactory.Identifier(classDeclarationSyntax.Name().ToParameterName()))
                 .WithType(SyntaxFactory.ParseTypeName(thisTypeName))
                 .AddThis();
 

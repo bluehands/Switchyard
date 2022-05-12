@@ -1,56 +1,70 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using FluentAssertions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Document = Microsoft.CodeAnalysis.Document;
 
-namespace Switchyard.CodeGeneration.Test
+namespace Switchyard.CodeGeneration.Test;
+
+public abstract class CodeProviderSpec : AsyncTestSpecification
 {
-    public abstract class CodeProviderSpec : AsyncTestSpecification
-    {
-        protected string SourceText;
-        protected string Updated;
+	protected string SourceText = null!;
+	protected string Updated = null!;
 
-        protected override void Given()
-        {
-            SourceText = WithSource();
-        }
+	protected override void Given()
+	{
+		SourceText = WithSource();
+	}
 
-        protected override async Task When()
-        {
-            var (workspace, document) = TestHelper.CreateWorkspace(SourceText);
-            var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
-            await Refactor(workspace, document, root).ConfigureAwait(false);
-            Updated = (await workspace.CurrentSolution.GetDocument(document.Id).GetSyntaxRootAsync().ConfigureAwait(false)).ToFullString();
-        }
+	protected override async Task When()
+	{
+		var (workspace, document) = TestHelper.CreateWorkspace(SourceText);
+		var root = await document.GetSyntaxRootAsync().ConfigureAwait(false);
+		await Refactor(workspace, document, root!).ConfigureAwait(false);
+		Updated = (await workspace.CurrentSolution.GetDocument(document.Id)!.GetSyntaxRootAsync().ConfigureAwait(false))!.ToFullString();
+		await VerifyGenerationResult(Updated);
 
-        protected abstract Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root);
+	}
 
-        protected abstract string WithSource();
-    }
+	protected abstract Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root);
 
-    [TestClass]
-    public abstract class with_immutable_helper_code_provider : CodeProviderSpec
-    {
-        protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
-        {
-            var updatedDocument = await ImmutableHelpersCodeProvider.GenerateWithExtension(
-                    document,
-                    root.DescendantNodes().OfType<ClassDeclarationSyntax>().Last(), CancellationToken.None)
-                .ConfigureAwait(false);
+	protected abstract string WithSource();
 
-            workspace.TryApplyChanges(updatedDocument.Project.Solution);
-        }
-    }
+	[TestMethod]
+	public void Then_refactored_output_compiles_without_errors()
+	{
+	}
+}
 
-    [TestClass]
-    public class When_adding_with_extension_for_top_level_class : with_immutable_helper_code_provider
-    {
-        protected override string WithSource() => @"namespace Test
+[TestClass]
+public abstract class with_immutable_helper_code_provider : CodeProviderSpec
 {
+	protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
+	{
+		var updatedDocument = await ImmutableHelpersCodeProvider.GenerateWithExtension(
+				document,
+				root.DescendantNodes().OfType<ClassDeclarationSyntax>().Last(), CancellationToken.None)
+			.ConfigureAwait(false);
+
+		workspace.TryApplyChanges(updatedDocument.Project.Solution);
+	}
+}
+
+[TestClass]
+public class When_adding_with_extension_for_top_level_class : with_immutable_helper_code_provider
+{
+	protected override string WithSource() => @"using System;
+
+namespace Test
+{
+	//fake Option class to avoid real FunicularSwitch reference in Test
+	public class Option<T> 
+	{
+		public T1 Match<T1>(Func<T, T1> some, Func<T1> none) => throw new NotImplementedException();
+	}
+
     public class Dummy
     {
         public string Prop1 { get; }
@@ -63,24 +77,22 @@ namespace Switchyard.CodeGeneration.Test
         }
     }
 }";
+}
 
-        [TestMethod]
-        public void Then_correct_and_well_formatted_output_is_created()
-        {
-            Updated.Should().EndWith(@"
-    public static class DummyWithExtension
-    {
-        public static Dummy With(this Dummy dummy, Option<string> prop1 = null, Option<bool> prop2 = null) => new Dummy(prop1: prop1 != null ? prop1.Match(x => x, () => dummy.Prop1) : dummy.Prop1, prop2: prop2 != null ? prop2.Match(x => x, () => dummy.Prop2) : dummy.Prop2);
-    }
-}");
-        }
-    }
-
-    [TestClass]
-    public class When_adding_with_extension_for_nested_class : with_immutable_helper_code_provider
-    {
-        protected override string WithSource() => @"namespace Test
+[TestClass]
+public class When_adding_with_extension_for_nested_class : with_immutable_helper_code_provider
 {
+	protected override string WithSource() => @"
+using System;
+
+namespace Test
+{
+	//fake Option class to avoid real FunicularSwitch reference in Test
+	public class Option<T> 
+	{
+		public T1 Match<T1>(Func<T, T1> some, Func<T1> none) => throw new NotImplementedException();
+	}
+
     public class Parent
     {
         public class Child
@@ -96,70 +108,4 @@ namespace Switchyard.CodeGeneration.Test
         }
     }
 }";
-
-        [TestMethod]
-        public void Then_correct_and_well_formatted_output_is_created()
-        {
-            Updated.Should().EndWith(@"
-    public static class ParentChildWithExtension
-    {
-        public static Parent.Child With(this Parent.Child child, Option<string> prop1 = null, Option<bool> prop2 = null) => new Parent.Child(prop1: prop1 != null ? prop1.Match(x => x, () => child.Prop1) : child.Prop1, prop2: prop2 != null ? prop2.Match(x => x, () => child.Prop2) : child.Prop2);
-    }
-}");
-        }
-    }
-
-    [TestClass]
-    public abstract class with_union_type_code_provider : CodeProviderSpec
-    {
-        protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
-        {
-            var updatedDoc = await UnionTypeCodeProvider.EnumToClass(
-                    document,
-                    root.DescendantNodes().OfType<EnumDeclarationSyntax>().Last(), CancellationToken.None)
-                .ConfigureAwait(false);
-            workspace.TryApplyChanges(updatedDoc.Project.Solution);
-        }
-    }
-
-    [TestClass]
-    public class When_generating_union_type_for_nested_enum : with_union_type_code_provider
-    {
-        protected override string WithSource() => @"namespace Test
-{
-    public class Parent
-    {
-        public enum Child
-        {
-            One,
-            Two
-        }
-    }
-}";
-
-        [TestMethod]
-        public void Then_assertion()
-        {
-            Updated.Should().NotBeNull();
-        }
-    }
-
-    [TestClass]
-    public class When_executing_enum_to_union_type_with_file_scoped_namespaces : with_union_type_code_provider
-    {
-        protected override string WithSource() => @"namespace Test;
-
-    public enum Child
-    {
-        One,
-        Two
-    }    
-";
-
-        [TestMethod]
-        public void Then_it_does_not_crash()
-        {
-            Updated.Should().NotBeNull();
-        }
-    }
 }

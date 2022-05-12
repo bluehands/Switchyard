@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Switchyard.CodeGeneration.Test
 {
-    public abstract class TestSpecification
+	public abstract class TestSpecification
     {
         [TestInitialize]
         public void Init()
@@ -19,7 +19,7 @@ namespace Switchyard.CodeGeneration.Test
     }
 
     [TestClass]
-    public abstract class AsyncTestSpecification
+    public abstract class AsyncTestSpecification : VerifyCSharpSource
     {
         [TestInitialize]
         public async Task Initialize()

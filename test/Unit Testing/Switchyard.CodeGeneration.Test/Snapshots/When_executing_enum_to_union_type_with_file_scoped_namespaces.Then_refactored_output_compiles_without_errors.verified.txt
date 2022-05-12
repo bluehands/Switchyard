@@ -1,0 +1,79 @@
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace Test;
+
+public abstract class Child
+{
+    public static readonly Child One = new One_();
+    public static readonly Child Two = new Two_();
+
+    public class One_ : Child
+    {
+        public One_() : base(UnionCases.One)
+        {
+        }
+    }
+
+    public class Two_ : Child
+    {
+        public Two_() : base(UnionCases.Two)
+        {
+        }
+    }
+
+    internal enum UnionCases
+    {
+        One,
+        Two
+    }
+
+    internal UnionCases UnionCase { get; }
+    Child(UnionCases unionCase) => UnionCase = unionCase;
+
+    public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+    bool Equals(Child other) => UnionCase == other.UnionCase;
+
+    public override bool Equals(object obj)
+    {
+        if (ReferenceEquals(null, obj)) return false;
+        if (ReferenceEquals(this, obj)) return true;
+        if (obj.GetType() != GetType()) return false;
+        return Equals((Child)obj);
+    }
+
+    public override int GetHashCode() => (int)UnionCase;
+}
+
+public static class ChildExtension
+{
+    public static T Match<T>(this Child child, Func<Child.One_, T> one, Func<Child.Two_, T> two)
+    {
+        switch (child.UnionCase)
+        {
+            case Child.UnionCases.One:
+                return one((Child.One_)child);
+            case Child.UnionCases.Two:
+                return two((Child.Two_)child);
+            default:
+                throw new ArgumentException($"Unknown type derived from Child: {child.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Child child, Func<Child.One_, Task<T>> one, Func<Child.Two_, Task<T>> two)
+    {
+        switch (child.UnionCase)
+        {
+            case Child.UnionCases.One:
+                return await one((Child.One_)child).ConfigureAwait(false);
+            case Child.UnionCases.Two:
+                return await two((Child.Two_)child).ConfigureAwait(false);
+            default:
+                throw new ArgumentException($"Unknown type derived from Child: {child.GetType().Name}");
+        }
+    }
+
+    public static async Task<T> Match<T>(this Task<Child> child, Func<Child.One_, T> one, Func<Child.Two_, T> two) => (await child.ConfigureAwait(false)).Match(one, two);
+    public static async Task<T> Match<T>(this Task<Child> child, Func<Child.One_, Task<T>> one, Func<Child.Two_, Task<T>> two) => await(await child.ConfigureAwait(false)).Match(one, two).ConfigureAwait(false);
+}

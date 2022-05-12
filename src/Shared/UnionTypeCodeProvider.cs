@@ -89,7 +89,7 @@ namespace Switchyard.CodeGeneration
                 });
 
 
-            var derivedTypes = caseTypeNames.Select(n => new MatchMethods.DerivedType($"{unionTypeName}.{n}_", n.FirstToLower(),
+            var derivedTypes = caseTypeNames.Select(n => new MatchMethods.DerivedType($"{unionTypeName}.{n}_", n.ToParameterName(),
                 $"{unionTypeName}.{WrapEnumToClass.DefaultNestedEnumTypeName}.{n}")).ToImmutableList();
 
             classDeclaration = classDeclaration.AddMatchMethods(unionTypeName, derivedTypes);
