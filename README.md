@@ -11,6 +11,8 @@ Refactorings interact nicely with the [FunicularSwitch.Generators](https://www.n
 
 ### Expand enum to union type
 
+![Alt Text](doc/ExpandEnumToUnionType.gif)
+
 **Motivation:** Imagine classes representing an ftp connection configuration like:
 
 ```csharp
