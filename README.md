@@ -178,6 +178,8 @@ To add a case to the union just add another entry to the UnionCases nested enum 
 
 ### Generate 'With' extension
 
+![Alt Text](doc/GenerateWithExtension.gif)
+
 Generate an extension method for an immutable type to easly create copies of that type with specific properties changed. The extension is inspired by F#s with operator (and was built prior to introduction of records in C# ;)). For this to work you need an Option class (for example from [FunicluarSwitch](https://www.nuget.org/packages/FunicularSwitch/) package) and a construtor that initializes the objects (read only) properties:
 
 ```csharp

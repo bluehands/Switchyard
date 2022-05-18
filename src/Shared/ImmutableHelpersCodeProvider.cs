@@ -109,7 +109,7 @@ namespace Switchyard.CodeGeneration
 
             var furtherParameters = constructorParameterList.Parameters
                 .Select(p => p
-                    .WithType(SyntaxFactory.ParseTypeName($"Option<{p.Type.Name()}>"))
+                    .WithType(SyntaxFactory.ParseTypeName($"Option<{p.Type.Name()}>{(CurrentCompilationOptions.Nullability ? "?" : "")}"))
                     .WithDefault(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression("null")))
                 );
 
