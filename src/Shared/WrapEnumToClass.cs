@@ -20,10 +20,6 @@ namespace Switchyard.CodeGeneration
 		{
 			var withEnumNested = unionTypeDeclaration.Match(u => node, () => new EnumToClassRewriter(enumTypeName, nestedEnumTypeName, enumPropertyName).Visit(node));
 			withEnumNested = withEnumNested.UpdateEnumClass(unionTypeDeclaration.Match(u => u.QualifiedName(), () => enumTypeName), addUnionTypeAttribute);
-			if (node is CompilationUnitSyntax compilationUnitSyntax)
-			{
-
-			}
 			return withEnumNested;
 		}
 
@@ -244,26 +240,33 @@ namespace Switchyard.CodeGeneration
 						.All(a => a.Name.ToString() != UnionTypeAttributeName))
 				{
 					node = node.WithAttributeLists(
-						SingletonList(
-							AttributeList(
-								SingletonSeparatedList(
-									Attribute(
-											QualifiedName(
+							SingletonList(
+								AttributeList(
+									SingletonSeparatedList(
+										Attribute(
 												QualifiedName(
-													IdentifierName("FunicularSwitch"),
-													IdentifierName("Generators")),
-												IdentifierName("UnionType")))
-										.WithArgumentList(
-											AttributeArgumentList(
-												SingletonSeparatedList(
-													AttributeArgument(
-															MemberAccessExpression(
-																SyntaxKind.SimpleMemberAccessExpression,
-																IdentifierName("CaseOrder"),
-																IdentifierName("AsDeclared"))
-															)
-														.WithNameEquals(NameEquals(IdentifierName("CaseOrder")))))))))
-					);
+													QualifiedName(
+														IdentifierName("FunicularSwitch"),
+														IdentifierName("Generators")),
+													IdentifierName("UnionType")))
+											.WithArgumentList(
+												AttributeArgumentList(
+													SingletonSeparatedList(
+														AttributeArgument(
+																MemberAccessExpression(
+																	SyntaxKind.SimpleMemberAccessExpression,
+																	MemberAccessExpression(
+																		SyntaxKind.SimpleMemberAccessExpression,
+																		MemberAccessExpression(
+																			SyntaxKind.SimpleMemberAccessExpression,
+																			IdentifierName("FunicularSwitch"),
+																			IdentifierName("Generators")),
+																		IdentifierName("CaseOrder")),
+																	IdentifierName("AsDeclared")))
+															.WithNameEquals(
+																NameEquals(
+																	IdentifierName("CaseOrder"))))))))))
+					;
 				}
 
 				return node;
