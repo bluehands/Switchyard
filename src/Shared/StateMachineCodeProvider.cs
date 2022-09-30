@@ -23,9 +23,9 @@ namespace Switchyard.CodeGeneration
             return dotFileFound ? dotFilePath : Option<string>.None;
         }
 
-        public static async Task<Document> GenerateStateMachine(Document document, string dotFileName, CancellationToken cancellationToken)
+        public static async Task<Document> GenerateStateMachine(Document document, Func<(string dotFileName, string fileContent)> readDotNotation, CancellationToken cancellationToken)
         {
-            if (!TryParseDotGraph(dotFileName, out var model))
+            if (!TryParseDotGraph(readDotNotation, out var model))
                 return document;
 
             var documentRoot = await GenerateStateMachineCode(document, model, cancellationToken).ConfigureAwait(false);
@@ -40,6 +40,15 @@ namespace Switchyard.CodeGeneration
             var funicularGeneratorsReferenced = document.FunicularGeneratorsReferenced();
 
             var documentRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+
+            if (documentRoot is CompilationUnitSyntax c)
+            {
+	            documentRoot = c.AddUsings(new[] { "System", "System.Threading.Tasks" }
+		            .Where(u => c.Usings.All(d => d.Name.Name() != u))
+		            .Select(u => SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(u)))
+		            .ToArray()
+	            ).NormalizeWhitespace();
+            }
 
             documentRoot = AddBaseInterfaceIfNotExists(documentRoot, model.BaseInterfaceName);
 
@@ -63,11 +72,12 @@ namespace Switchyard.CodeGeneration
             return documentRoot;
         }
 
-        static bool TryParseDotGraph(string dotFileName, out StateMachineModel model)
+        static bool TryParseDotGraph(Func<(string dotFileName, string fileContent)> readDotNotation, out StateMachineModel model)
         {
             try
             {
-                var graph = AntlrParserAdapter<string>.GetParser().Parse(File.ReadAllText(dotFileName));
+	            var (dotFileName, dotNotation) = readDotNotation();
+	            var graph = AntlrParserAdapter<string>.GetParser().Parse(dotNotation);
                 model = new StateMachineModel(dotFileName, graph);
                 return true;
             }

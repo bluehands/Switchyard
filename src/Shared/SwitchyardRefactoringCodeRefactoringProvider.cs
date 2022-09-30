@@ -39,7 +39,7 @@ namespace Switchyard
                 _ => StateMachineCodeProvider.TryGetDotFilename(context.Document),
                 async (dotFilePath, c) =>
                 {
-                    var updatedDoc = await StateMachineCodeProvider.GenerateStateMachine(context.Document, dotFilePath, c);
+                    var updatedDoc = await StateMachineCodeProvider.GenerateStateMachine(context.Document, () => (dotFilePath, File.ReadAllText(dotFilePath)), c);
                     return updatedDoc.Project.Solution;
                 }, node);
         }

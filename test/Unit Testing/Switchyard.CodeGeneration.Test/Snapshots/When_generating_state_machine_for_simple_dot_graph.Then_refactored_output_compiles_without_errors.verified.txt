@@ -1,0 +1,562 @@
+﻿using System;
+using System.Threading.Tasks;
+
+namespace StateMachineSpecs
+{
+    public interface ILicenseState
+    {
+        LicenseStateState State { get; }
+    }
+
+    public class NoLicenseLicenseState : ILicenseState
+    {
+        public LicenseStateState State => LicenseStateState.NoLicense;
+
+        public NotRegisteredLicenseState DemoLicenseFound()
+        {
+            return new NotRegisteredLicenseState();
+        }
+
+        public NotRegisteredLicenseState DemoLicenseFound(LicenseStateParameters.DemoLicenseFound parameters)
+        {
+            return DemoLicenseFound();
+        }
+
+        public FullLicenseState FullLicenseFound()
+        {
+            return new FullLicenseState();
+        }
+
+        public FullLicenseState FullLicenseFound(LicenseStateParameters.FullLicenseFound parameters)
+        {
+            return FullLicenseFound();
+        }
+    }
+
+    public class NotRegisteredLicenseState : ILicenseState
+    {
+        public LicenseStateState State => LicenseStateState.NotRegistered;
+
+        public FullLicenseState FullLicenseFound()
+        {
+            return new FullLicenseState();
+        }
+
+        public FullLicenseState FullLicenseFound(LicenseStateParameters.FullLicenseFound parameters)
+        {
+            return FullLicenseFound();
+        }
+
+        public NotRegisteredLicenseState DemoLicenseFound()
+        {
+            return new NotRegisteredLicenseState();
+        }
+
+        public NotRegisteredLicenseState DemoLicenseFound(LicenseStateParameters.DemoLicenseFound parameters)
+        {
+            return DemoLicenseFound();
+        }
+
+        public DemoRegisteredLicenseState DemoRegistered()
+        {
+            return new DemoRegisteredLicenseState();
+        }
+
+        public DemoRegisteredLicenseState DemoRegistered(LicenseStateParameters.DemoRegistered parameters)
+        {
+            return DemoRegistered();
+        }
+    }
+
+    public class DemoRegisteredLicenseState : ILicenseState
+    {
+        public LicenseStateState State => LicenseStateState.DemoRegistered;
+
+        public CommunityRegisteredLicenseState CommunityRegistered()
+        {
+            return new CommunityRegisteredLicenseState();
+        }
+
+        public CommunityRegisteredLicenseState CommunityRegistered(LicenseStateParameters.CommunityRegistered parameters)
+        {
+            return CommunityRegistered();
+        }
+
+        public DemoRegisteredLicenseState DemoLicenseFound()
+        {
+            return new DemoRegisteredLicenseState();
+        }
+
+        public DemoRegisteredLicenseState DemoLicenseFound(LicenseStateParameters.DemoLicenseFound parameters)
+        {
+            return DemoLicenseFound();
+        }
+
+        public FullLicenseState FullLicenseFound()
+        {
+            return new FullLicenseState();
+        }
+
+        public FullLicenseState FullLicenseFound(LicenseStateParameters.FullLicenseFound parameters)
+        {
+            return FullLicenseFound();
+        }
+    }
+
+    public class CommunityRegisteredLicenseState : ILicenseState
+    {
+        public LicenseStateState State => LicenseStateState.CommunityRegistered;
+
+        public FullLicenseState FullLicenseFound()
+        {
+            return new FullLicenseState();
+        }
+
+        public FullLicenseState FullLicenseFound(LicenseStateParameters.FullLicenseFound parameters)
+        {
+            return FullLicenseFound();
+        }
+
+        public CommunityRegisteredLicenseState DemoLicenseFound()
+        {
+            return new CommunityRegisteredLicenseState();
+        }
+
+        public CommunityRegisteredLicenseState DemoLicenseFound(LicenseStateParameters.DemoLicenseFound parameters)
+        {
+            return DemoLicenseFound();
+        }
+    }
+
+    public class FullLicenseState : ILicenseState
+    {
+        public LicenseStateState State => LicenseStateState.Full;
+
+        public FullLicenseState FullLicenseFound()
+        {
+            return new FullLicenseState();
+        }
+
+        public FullLicenseState FullLicenseFound(LicenseStateParameters.FullLicenseFound parameters)
+        {
+            return FullLicenseFound();
+        }
+    }
+
+    public interface ILicenseStateParameter
+    {
+        LicenseStateTrigger Trigger { get; }
+    }
+
+    public static class LicenseStateParameters
+    {
+        public class DemoLicenseFound : ILicenseStateParameter
+        {
+            public LicenseStateTrigger Trigger => LicenseStateTrigger.DemoLicenseFound;
+        }
+
+        public class FullLicenseFound : ILicenseStateParameter
+        {
+            public LicenseStateTrigger Trigger => LicenseStateTrigger.FullLicenseFound;
+        }
+
+        public class DemoRegistered : ILicenseStateParameter
+        {
+            public LicenseStateTrigger Trigger => LicenseStateTrigger.DemoRegistered;
+        }
+
+        public class CommunityRegistered : ILicenseStateParameter
+        {
+            public LicenseStateTrigger Trigger => LicenseStateTrigger.CommunityRegistered;
+        }
+    }
+
+    public abstract class LicenseStateState
+    {
+        public static readonly LicenseStateState NoLicense = new NoLicense_();
+        public static readonly LicenseStateState NotRegistered = new NotRegistered_();
+        public static readonly LicenseStateState DemoRegistered = new DemoRegistered_();
+        public static readonly LicenseStateState CommunityRegistered = new CommunityRegistered_();
+        public static readonly LicenseStateState Full = new Full_();
+
+        public class NoLicense_ : LicenseStateState
+        {
+            public NoLicense_() : base(UnionCases.NoLicense)
+            {
+            }
+        }
+
+        public class NotRegistered_ : LicenseStateState
+        {
+            public NotRegistered_() : base(UnionCases.NotRegistered)
+            {
+            }
+        }
+
+        public class DemoRegistered_ : LicenseStateState
+        {
+            public DemoRegistered_() : base(UnionCases.DemoRegistered)
+            {
+            }
+        }
+
+        public class CommunityRegistered_ : LicenseStateState
+        {
+            public CommunityRegistered_() : base(UnionCases.CommunityRegistered)
+            {
+            }
+        }
+
+        public class Full_ : LicenseStateState
+        {
+            public Full_() : base(UnionCases.Full)
+            {
+            }
+        }
+
+        internal enum UnionCases
+        {
+            NoLicense,
+            NotRegistered,
+            DemoRegistered,
+            CommunityRegistered,
+            Full
+        }
+
+        internal UnionCases UnionCase { get; }
+        LicenseStateState(UnionCases unionCase) => UnionCase = unionCase;
+
+        public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+        bool Equals(LicenseStateState other) => UnionCase == other.UnionCase;
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((LicenseStateState)obj);
+        }
+
+        public override int GetHashCode() => (int)UnionCase;
+    }
+
+    public abstract class LicenseStateTrigger
+    {
+        public static readonly LicenseStateTrigger DemoLicenseFound = new DemoLicenseFound_();
+        public static readonly LicenseStateTrigger FullLicenseFound = new FullLicenseFound_();
+        public static readonly LicenseStateTrigger DemoRegistered = new DemoRegistered_();
+        public static readonly LicenseStateTrigger CommunityRegistered = new CommunityRegistered_();
+
+        public class DemoLicenseFound_ : LicenseStateTrigger
+        {
+            public DemoLicenseFound_() : base(UnionCases.DemoLicenseFound)
+            {
+            }
+        }
+
+        public class FullLicenseFound_ : LicenseStateTrigger
+        {
+            public FullLicenseFound_() : base(UnionCases.FullLicenseFound)
+            {
+            }
+        }
+
+        public class DemoRegistered_ : LicenseStateTrigger
+        {
+            public DemoRegistered_() : base(UnionCases.DemoRegistered)
+            {
+            }
+        }
+
+        public class CommunityRegistered_ : LicenseStateTrigger
+        {
+            public CommunityRegistered_() : base(UnionCases.CommunityRegistered)
+            {
+            }
+        }
+
+        internal enum UnionCases
+        {
+            DemoLicenseFound,
+            FullLicenseFound,
+            DemoRegistered,
+            CommunityRegistered
+        }
+
+        internal UnionCases UnionCase { get; }
+        LicenseStateTrigger(UnionCases unionCase) => UnionCase = unionCase;
+
+        public override string ToString() => Enum.GetName(typeof(UnionCases), UnionCase) ?? UnionCase.ToString();
+        bool Equals(LicenseStateTrigger other) => UnionCase == other.UnionCase;
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj)) return false;
+            if (ReferenceEquals(this, obj)) return true;
+            if (obj.GetType() != GetType()) return false;
+            return Equals((LicenseStateTrigger)obj);
+        }
+
+        public override int GetHashCode() => (int)UnionCase;
+    }
+
+    public abstract class LicenseStateTransitionResult
+    {
+    }
+
+    public class LicenseStateTransition : LicenseStateTransitionResult
+    {
+        public ILicenseState Source { get; }
+        public ILicenseState Destination { get; }
+        public ILicenseStateParameter Trigger { get; }
+
+        public LicenseStateTransition(ILicenseState source, ILicenseState destination, ILicenseStateParameter trigger)
+        {
+            Source = source; Destination = destination; Trigger = trigger;
+        }
+    }
+
+    public class LicenseStateInvalidTrigger : LicenseStateTransitionResult
+    {
+        public ILicenseState Source { get; }
+        public ILicenseStateParameter Trigger { get; }
+
+        public LicenseStateInvalidTrigger(ILicenseState source, ILicenseStateParameter trigger)
+        {
+            Source = source; Trigger = trigger;
+        }
+    }
+
+    public static class LicenseStateExtension
+    {
+        public static ILicenseState Apply(this ILicenseState licenseState, ILicenseStateParameter parameter)
+        {
+            switch (licenseState.State.UnionCase)
+            {
+                case LicenseStateState.UnionCases.NoLicense:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return ((NoLicenseLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter);
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return ((NoLicenseLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                            default:
+                                return licenseState;
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.NotRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return ((NotRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return ((NotRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter);
+                            case LicenseStateTrigger.UnionCases.DemoRegistered:
+                                return ((NotRegisteredLicenseState)licenseState).DemoRegistered((LicenseStateParameters.DemoRegistered)parameter);
+                            default:
+                                return licenseState;
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.DemoRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.CommunityRegistered:
+                                return ((DemoRegisteredLicenseState)licenseState).CommunityRegistered((LicenseStateParameters.CommunityRegistered)parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return ((DemoRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter);
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return ((DemoRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                            default:
+                                return licenseState;
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.CommunityRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return ((CommunityRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return ((CommunityRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter);
+                            default:
+                                return licenseState;
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.Full:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return ((FullLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                            default:
+                                return licenseState;
+                        }
+                    }
+
+                default:
+                    throw new ArgumentException($"Unknown type implementing ILicenseState: {licenseState.GetType().Name}");
+            }
+        }
+
+        public static LicenseStateTransitionResult DoTransition(this ILicenseState licenseState, ILicenseStateParameter parameter)
+        {
+            switch (licenseState.State.UnionCase)
+            {
+                case LicenseStateState.UnionCases.NoLicense:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((NoLicenseLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((NoLicenseLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter), parameter);
+                            default:
+                                return new LicenseStateInvalidTrigger(licenseState, parameter);
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.NotRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((NotRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((NotRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.DemoRegistered:
+                                return new LicenseStateTransition(licenseState, ((NotRegisteredLicenseState)licenseState).DemoRegistered((LicenseStateParameters.DemoRegistered)parameter), parameter);
+                            default:
+                                return new LicenseStateInvalidTrigger(licenseState, parameter);
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.DemoRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.CommunityRegistered:
+                                return new LicenseStateTransition(licenseState, ((DemoRegisteredLicenseState)licenseState).CommunityRegistered((LicenseStateParameters.CommunityRegistered)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((DemoRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((DemoRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter), parameter);
+                            default:
+                                return new LicenseStateInvalidTrigger(licenseState, parameter);
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.CommunityRegistered:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((CommunityRegisteredLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter), parameter);
+                            case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((CommunityRegisteredLicenseState)licenseState).DemoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter), parameter);
+                            default:
+                                return new LicenseStateInvalidTrigger(licenseState, parameter);
+                        }
+                    }
+
+                case LicenseStateState.UnionCases.Full:
+                    {
+                        switch (parameter.Trigger.UnionCase)
+                        {
+                            case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                                return new LicenseStateTransition(licenseState, ((FullLicenseState)licenseState).FullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter), parameter);
+                            default:
+                                return new LicenseStateInvalidTrigger(licenseState, parameter);
+                        }
+                    }
+
+                default:
+                    throw new ArgumentException($"Unknown type implementing ILicenseState: {licenseState.GetType().Name}");
+            }
+        }
+
+        public static T Match<T>(this ILicenseState licenseState, Func<NoLicenseLicenseState, T> noLicense, Func<NotRegisteredLicenseState, T> notRegistered, Func<DemoRegisteredLicenseState, T> demoRegistered, Func<CommunityRegisteredLicenseState, T> communityRegistered, Func<FullLicenseState, T> full)
+        {
+            switch (licenseState.State.UnionCase)
+            {
+                case LicenseStateState.UnionCases.NoLicense:
+                    return noLicense((NoLicenseLicenseState)licenseState);
+                case LicenseStateState.UnionCases.NotRegistered:
+                    return notRegistered((NotRegisteredLicenseState)licenseState);
+                case LicenseStateState.UnionCases.DemoRegistered:
+                    return demoRegistered((DemoRegisteredLicenseState)licenseState);
+                case LicenseStateState.UnionCases.CommunityRegistered:
+                    return communityRegistered((CommunityRegisteredLicenseState)licenseState);
+                case LicenseStateState.UnionCases.Full:
+                    return full((FullLicenseState)licenseState);
+                default:
+                    throw new ArgumentException($"Unknown type derived from ILicenseState: {licenseState.GetType().Name}");
+            }
+        }
+
+        public static async Task<T> Match<T>(this ILicenseState licenseState, Func<NoLicenseLicenseState, Task<T>> noLicense, Func<NotRegisteredLicenseState, Task<T>> notRegistered, Func<DemoRegisteredLicenseState, Task<T>> demoRegistered, Func<CommunityRegisteredLicenseState, Task<T>> communityRegistered, Func<FullLicenseState, Task<T>> full)
+        {
+            switch (licenseState.State.UnionCase)
+            {
+                case LicenseStateState.UnionCases.NoLicense:
+                    return await noLicense((NoLicenseLicenseState)licenseState).ConfigureAwait(false);
+                case LicenseStateState.UnionCases.NotRegistered:
+                    return await notRegistered((NotRegisteredLicenseState)licenseState).ConfigureAwait(false);
+                case LicenseStateState.UnionCases.DemoRegistered:
+                    return await demoRegistered((DemoRegisteredLicenseState)licenseState).ConfigureAwait(false);
+                case LicenseStateState.UnionCases.CommunityRegistered:
+                    return await communityRegistered((CommunityRegisteredLicenseState)licenseState).ConfigureAwait(false);
+                case LicenseStateState.UnionCases.Full:
+                    return await full((FullLicenseState)licenseState).ConfigureAwait(false);
+                default:
+                    throw new ArgumentException($"Unknown type derived from ILicenseState: {licenseState.GetType().Name}");
+            }
+        }
+
+        public static async Task<T> Match<T>(this Task<ILicenseState> licenseState, Func<NoLicenseLicenseState, T> noLicense, Func<NotRegisteredLicenseState, T> notRegistered, Func<DemoRegisteredLicenseState, T> demoRegistered, Func<CommunityRegisteredLicenseState, T> communityRegistered, Func<FullLicenseState, T> full) => (await licenseState.ConfigureAwait(false)).Match(noLicense, notRegistered, demoRegistered, communityRegistered, full);
+        public static async Task<T> Match<T>(this Task<ILicenseState> licenseState, Func<NoLicenseLicenseState, Task<T>> noLicense, Func<NotRegisteredLicenseState, Task<T>> notRegistered, Func<DemoRegisteredLicenseState, Task<T>> demoRegistered, Func<CommunityRegisteredLicenseState, Task<T>> communityRegistered, Func<FullLicenseState, Task<T>> full) => await(await licenseState.ConfigureAwait(false)).Match(noLicense, notRegistered, demoRegistered, communityRegistered, full).ConfigureAwait(false);
+
+        public static T Match<T>(this ILicenseStateParameter parameter, Func<LicenseStateParameters.DemoLicenseFound, T> demoLicenseFound, Func<LicenseStateParameters.FullLicenseFound, T> fullLicenseFound, Func<LicenseStateParameters.DemoRegistered, T> demoRegistered, Func<LicenseStateParameters.CommunityRegistered, T> communityRegistered)
+        {
+            switch (parameter.Trigger.UnionCase)
+            {
+                case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                    return demoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter);
+                case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                    return fullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter);
+                case LicenseStateTrigger.UnionCases.DemoRegistered:
+                    return demoRegistered((LicenseStateParameters.DemoRegistered)parameter);
+                case LicenseStateTrigger.UnionCases.CommunityRegistered:
+                    return communityRegistered((LicenseStateParameters.CommunityRegistered)parameter);
+                default:
+                    throw new ArgumentException($"Unknown type derived from ILicenseStateParameter: {parameter.GetType().Name}");
+            }
+        }
+
+        public static async Task<T> Match<T>(this ILicenseStateParameter parameter, Func<LicenseStateParameters.DemoLicenseFound, Task<T>> demoLicenseFound, Func<LicenseStateParameters.FullLicenseFound, Task<T>> fullLicenseFound, Func<LicenseStateParameters.DemoRegistered, Task<T>> demoRegistered, Func<LicenseStateParameters.CommunityRegistered, Task<T>> communityRegistered)
+        {
+            switch (parameter.Trigger.UnionCase)
+            {
+                case LicenseStateTrigger.UnionCases.DemoLicenseFound:
+                    return await demoLicenseFound((LicenseStateParameters.DemoLicenseFound)parameter).ConfigureAwait(false);
+                case LicenseStateTrigger.UnionCases.FullLicenseFound:
+                    return await fullLicenseFound((LicenseStateParameters.FullLicenseFound)parameter).ConfigureAwait(false);
+                case LicenseStateTrigger.UnionCases.DemoRegistered:
+                    return await demoRegistered((LicenseStateParameters.DemoRegistered)parameter).ConfigureAwait(false);
+                case LicenseStateTrigger.UnionCases.CommunityRegistered:
+                    return await communityRegistered((LicenseStateParameters.CommunityRegistered)parameter).ConfigureAwait(false);
+                default:
+                    throw new ArgumentException($"Unknown type derived from ILicenseStateParameter: {parameter.GetType().Name}");
+            }
+        }
+
+        public static async Task<T> Match<T>(this Task<ILicenseStateParameter> parameter, Func<LicenseStateParameters.DemoLicenseFound, T> demoLicenseFound, Func<LicenseStateParameters.FullLicenseFound, T> fullLicenseFound, Func<LicenseStateParameters.DemoRegistered, T> demoRegistered, Func<LicenseStateParameters.CommunityRegistered, T> communityRegistered) => (await parameter.ConfigureAwait(false)).Match(demoLicenseFound, fullLicenseFound, demoRegistered, communityRegistered);
+        public static async Task<T> Match<T>(this Task<ILicenseStateParameter> parameter, Func<LicenseStateParameters.DemoLicenseFound, Task<T>> demoLicenseFound, Func<LicenseStateParameters.FullLicenseFound, Task<T>> fullLicenseFound, Func<LicenseStateParameters.DemoRegistered, Task<T>> demoRegistered, Func<LicenseStateParameters.CommunityRegistered, Task<T>> communityRegistered) => await(await parameter.ConfigureAwait(false)).Match(demoLicenseFound, fullLicenseFound, demoRegistered, communityRegistered).ConfigureAwait(false);
+    }
+}
