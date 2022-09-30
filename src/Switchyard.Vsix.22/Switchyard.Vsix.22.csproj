@@ -62,10 +62,12 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>CSharp10</DefineConstants>
+    <NoWarn>VSTHRD200</NoWarn>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <DefineConstants>CSharp10</DefineConstants>
+    <NoWarn>VSTHRD200</NoWarn>
   </PropertyGroup>
   
   <Target Name="IncludePackageReferenceDependencies" AfterTargets="GetVsixSourceItems">

@@ -261,6 +261,18 @@ namespace Switchyard.CodeGeneration
             return syntaxNode;
         }
 
+        public static SyntaxNode AssertUsingDirectives(this SyntaxNode documentRoot, params string[] namespaces)
+        {
+	        if (!(documentRoot is CompilationUnitSyntax c))
+		        throw new ArgumentException($"Unexpected syntax node type {documentRoot.GetType()}. Expected CompilationUnitSyntax");
+
+            return c.AddUsings(namespaces
+		        .Where(u => c.Usings.All(d => d.Name.Name() != u))
+		        .Select(u => SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(u)))
+		        .ToArray()
+	        ).NormalizeWhitespace();
+        }
+
         class NodeWithMembers
         {
             public SyntaxNode Node { get; }

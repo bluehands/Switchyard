@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 namespace Test;
-
 public abstract class Child
 {
     public static readonly Child One = new One_();

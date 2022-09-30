@@ -41,14 +41,7 @@ namespace Switchyard.CodeGeneration
 
             var documentRoot = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            if (documentRoot is CompilationUnitSyntax c)
-            {
-	            documentRoot = c.AddUsings(new[] { "System", "System.Threading.Tasks" }
-		            .Where(u => c.Usings.All(d => d.Name.Name() != u))
-		            .Select(u => SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(u)))
-		            .ToArray()
-	            ).NormalizeWhitespace();
-            }
+            documentRoot = documentRoot.AssertUsingDirectives("System", "System.Threading.Tasks");
 
             documentRoot = AddBaseInterfaceIfNotExists(documentRoot, model.BaseInterfaceName);
 

@@ -54,6 +54,8 @@ namespace Switchyard.CodeGeneration
 
             var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
+            root = root.AssertUsingDirectives("System", "System.Linq", "System.Threading.Tasks");
+
             var unionType = enumName.Name == WrapEnumToClass.DefaultNestedEnumTypeName
                 ? (ClassDeclarationSyntax)enumNode.Parent
                 : Option.None<ClassDeclarationSyntax>();
