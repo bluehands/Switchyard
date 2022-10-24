@@ -28,7 +28,7 @@ namespace Switchyard.CodeGeneration
 	        return parameterName.IsAnyKeyWord() ? $"@{parameterName}" : parameterName;
         }
 
-        public static SyntaxNode AddMemberToNamespace(this SyntaxNode node, MemberDeclarationSyntax member, Func<MemberDeclarationSyntax, bool> afterMember = null)
+        public static SyntaxNode AddMemberToNamespace(this SyntaxNode node, MemberDeclarationSyntax member, Func<MemberDeclarationSyntax, bool>? afterMember = null)
         {
             var visitor = new AddMemberToNamespace(member, afterMember);
             return visitor.Visit(node);
@@ -77,7 +77,7 @@ namespace Switchyard.CodeGeneration
 
         public static ClassDeclarationSyntax AddProperty(this ClassDeclarationSyntax node, string typeName,
             string identifier,
-            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax> modify = null) =>
+            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax>? modify = null) =>
             node.AddMembers(MakeProperty(typeName, identifier, modify));
 
         public static SyntaxNode AddTypeDeclarationIfNotExists(this SyntaxNode node, string className,
@@ -88,7 +88,7 @@ namespace Switchyard.CodeGeneration
         }
 
         public static ClassDeclarationSyntax AddPropertyIfNotExists(this ClassDeclarationSyntax node, string typeName,
-            string identifier, Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax> modify = null)
+            string identifier, Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax>? modify = null)
         {
             var stateProperty = node.DescendantNodes().OfType<PropertyDeclarationSyntax>()
                 .FirstOrDefault(p => p.Type.ToString() == typeName && p.Name() == identifier);
@@ -107,7 +107,7 @@ namespace Switchyard.CodeGeneration
                 SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Name().ToParameterName())).WithType(p.Type))));
 
             if (classDeclaration.Members.OfType<ConstructorDeclarationSyntax>()
-                .Any(c => c.ParameterList.Parameters.Count == parameterList.Parameters.Count && c.ParameterList.Parameters.Zip(parameterList.Parameters, (p1, p2) => p1.Type.Name() == p2.Type.Name()).All(b => b)))
+                .Any(c => c.ParameterList.Parameters.Count == parameterList.Parameters.Count && c.ParameterList.Parameters.Zip(parameterList.Parameters, (p1, p2) => p1.Type?.Name() == p2.Type?.Name()).All(b => b)))
             {
                 return classDeclaration;
             }
@@ -132,7 +132,7 @@ namespace Switchyard.CodeGeneration
                         .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))));
 
         public static PropertyDeclarationSyntax MakeProperty(string typeName, string identifier,
-            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax> modify = null)
+            Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax>? modify = null)
         {
             var declarationSyntax = SyntaxFactory
                 .PropertyDeclaration(SyntaxFactory.ParseTypeName(typeName), identifier)
@@ -153,16 +153,16 @@ namespace Switchyard.CodeGeneration
 
         public static Option<T> TryGetFirstDescendant<T>(this SyntaxNode node, Func<T, bool> predicate) where T : class => FirstDescendantOrDefault(node, predicate).ToOption();
 
-        public static T FirstDescendantOrDefault<T>(this SyntaxNode node, Func<T, bool> predicate) where T : class => node.DescendantNodes().OfType<T>().FirstOrDefault(predicate);
+        public static T? FirstDescendantOrDefault<T>(this SyntaxNode node, Func<T, bool> predicate) where T : class => node.DescendantNodes().OfType<T>().FirstOrDefault(predicate);
 
-        public static ClassDeclarationSyntax AddOrUpdateMethodMatchByFirstParameterType(this ClassDeclarationSyntax classDeclaration, MethodDeclarationSyntax method, Func<MethodDeclarationSyntax, bool> additionalChecks = null)
+        public static ClassDeclarationSyntax AddOrUpdateMethodMatchByFirstParameterType(this ClassDeclarationSyntax classDeclaration, MethodDeclarationSyntax method, Func<MethodDeclarationSyntax, bool>? additionalChecks = null)
         {
             additionalChecks = additionalChecks ?? (m => true);
 
             return AddOrUpdateMethod(classDeclaration, m =>
                 m.Name() == method.Name() && m.ReturnType.ToString() == method.ReturnType.ToString() &&
-                m.ParameterList.Parameters.FirstOrDefault()?.Type.Name() ==
-                method.ParameterList.Parameters.FirstOrDefault()?.Type.Name() && additionalChecks(m), method);
+                m.ParameterList.Parameters.FirstOrDefault()?.Type?.Name() ==
+                method.ParameterList.Parameters.FirstOrDefault()?.Type?.Name() && additionalChecks(m), method);
         }
 
         public static ClassDeclarationSyntax AddOrUpdateMethod(this ClassDeclarationSyntax classDeclaration, Func<MethodDeclarationSyntax, bool> predicate,
@@ -188,7 +188,7 @@ namespace Switchyard.CodeGeneration
         public static ParameterSyntax AddThis(this ParameterSyntax parameter)
             => parameter.WithModifiers(SyntaxTokenList.Create(SyntaxFactory.Token(SyntaxKind.ThisKeyword)));
 
-        public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate), newClass);
+        public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate)!, newClass);
 
         public static TRoot AddOrUpdateClass<TRoot>(this TRoot root, string className,
             Func<ClassDeclarationSyntax, ClassDeclarationSyntax> initialUpdateNode, Func<ClassDeclarationSyntax, ClassDeclarationSyntax> updateNode) where TRoot : SyntaxNode
@@ -199,7 +199,8 @@ namespace Switchyard.CodeGeneration
         public static TRoot AddOrUpdateNode<TRoot, TOrig>(this TRoot root, Func<TOrig, bool> predicate,
             Func<TOrig> createNode, Func<TOrig, MemberDeclarationSyntax> updateNode) where TOrig : SyntaxNode where TRoot : SyntaxNode
         {
-            var orig = root.TryGetFirstDescendant(predicate)
+            var orig = root
+	            .TryGetFirstDescendant(predicate)
                 .GetValueOrDefault(createNode);
 
             var updated = updateNode(orig);
@@ -292,7 +293,7 @@ namespace Switchyard.CodeGeneration
     public class TypeDeclarationFinder : CSharpSyntaxWalker
     {
         readonly string m_TypeName;
-        BaseTypeDeclarationSyntax m_Declaration;
+        BaseTypeDeclarationSyntax? m_Declaration;
 
         public static Option<BaseTypeDeclarationSyntax> TryGetTypeDeclaration(SyntaxNode node, string className)
         {
@@ -329,10 +330,10 @@ namespace Switchyard.CodeGeneration
         readonly MemberDeclarationSyntax m_Member;
         readonly Func<MemberDeclarationSyntax, bool> m_AfterMember;
 
-        public AddMemberToNamespace(MemberDeclarationSyntax member, Func<MemberDeclarationSyntax, bool> afterMember = null)
+        public AddMemberToNamespace(MemberDeclarationSyntax member, Func<MemberDeclarationSyntax, bool>? afterMember = null)
         {
             m_Member = member;
-            m_AfterMember = afterMember ?? (m => false);
+            m_AfterMember = afterMember ?? (_ => false);
         }
 
         public override SyntaxNode VisitNamespaceDeclaration(NamespaceDeclarationSyntax node)

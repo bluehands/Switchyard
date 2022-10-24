@@ -19,6 +19,9 @@ namespace Switchyard
             CurrentCompilationOptions.Nullability = context.Document.Project.CompilationOptions?.NullableContextOptions.Equals(NullableContextOptions.Enable) ?? true;
 
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            if (root == null)
+                return;
+
             var node = root.FindToken(context.Span.Start);
 
             context.Register("Expand enum to union type", UnionTypeCodeProvider.TryGetEnumDeclaration,

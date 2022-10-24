@@ -43,7 +43,7 @@ namespace Switchyard.CodeGeneration
 			{
 				var nodeName = node.QualifiedName();
 
-				if (nodeName != m_EnumTypeName) return base.VisitEnumDeclaration(node);
+				if (nodeName != m_EnumTypeName) return base.VisitEnumDeclaration(node)!;
 
 				var classDeclaration = ClassDeclaration(m_EnumTypeName.Name)
 					.WithModifiers(node.Modifiers)
@@ -219,7 +219,7 @@ namespace Switchyard.CodeGeneration
 								return name != null && enumMemberNames.Contains(name);
 							});
 
-						node = node.RemoveNodes(existingStaticCaseNodes, SyntaxRemoveOptions.KeepNoTrivia);
+						node = node.RemoveNodes(existingStaticCaseNodes, SyntaxRemoveOptions.KeepNoTrivia)!;
 
 						// ReSharper disable once PossibleNullReferenceException
 						node = node.WithMembers(node.Members.InsertRange(0, staticCaseMembers));
@@ -230,7 +230,7 @@ namespace Switchyard.CodeGeneration
 					}
 				}
 
-				return base.VisitClassDeclaration(node);
+				return base.VisitClassDeclaration(node)!;
 			}
 
 			ClassDeclarationSyntax AddUnionTypeAttribute(ClassDeclarationSyntax node)

@@ -35,7 +35,11 @@ namespace Switchyard.CodeGeneration
 
         public static async Task<Document> GenerateWithExtension(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken cancellationToken)
         {
-            var classInfos = TypeNameWalker.GetQualifiedTypeNames(await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false));
+	        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+	        if (root == null)
+		        return document;
+
+            var classInfos = TypeNameWalker.GetQualifiedTypeNames(root);
 
             var constructors = classDeclaration
                 .Members
@@ -68,8 +72,6 @@ namespace Switchyard.CodeGeneration
 
                 ).NormalizeWhitespace();
 
-
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
             var updated = root.AddOrUpdateClass(extensionClassName, c => extensionClass, c => extensionClass);
 
             var updatedDoc = document.WithSyntaxRoot(updated);
@@ -109,7 +111,7 @@ namespace Switchyard.CodeGeneration
 
             var furtherParameters = constructorParameterList.Parameters
                 .Select(p => p
-                    .WithType(SyntaxFactory.ParseTypeName($"Option<{p.Type.Name()}>{(CurrentCompilationOptions.Nullability ? "?" : "")}"))
+                    .WithType(SyntaxFactory.ParseTypeName($"Option<{p.Type!.Name()}>{(CurrentCompilationOptions.Nullability ? "?" : "")}"))
                     .WithDefault(SyntaxFactory.EqualsValueClause(SyntaxFactory.ParseExpression("null")))
                 );
 

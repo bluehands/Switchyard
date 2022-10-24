@@ -24,7 +24,7 @@ public class When_generating_state_machine_for_simple_dot_graph : with_state_mac
 {
 	protected override string WithSource() => "namespace StateMachineSpecs {}";
 
-	protected override (string dotFileName, string fileContent) GetDotFile() => ("LicenseState.dot", @"digraph LicenseFlow {
+	protected override (string dotFileName, string fileContent) GetDotFile() => ("License.dot", @"digraph LicenseFlow {
     
   NoLicense;
   NotRegistered;

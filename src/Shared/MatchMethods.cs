@@ -69,8 +69,8 @@ namespace Switchyard.CodeGeneration
         static bool AssertSecondParameterHasSameType(BaseMethodDeclarationSyntax newMethod, BaseMethodDeclarationSyntax existing)
         {
             if (newMethod.ParameterList.Parameters.Count < 2) return true;
-            return existing.ParameterList.Parameters.Count > 1 && existing.ParameterList.Parameters[1].Type.ToString() ==
-                   newMethod.ParameterList.Parameters[1].Type.ToString();
+            return existing.ParameterList.Parameters.Count > 1 && existing.ParameterList.Parameters[1].Type?.ToString() ==
+                   newMethod.ParameterList.Parameters[1].Type?.ToString();
         }
 
         public static IEnumerable<MethodDeclarationSyntax> GenerateAll(QualifiedTypeName baseTypeName,
@@ -136,9 +136,9 @@ namespace Switchyard.CodeGeneration
             return matchMethod;
         }
 
-        static MethodDeclarationSyntax MatchMethodDeclaration(string baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes, string returnType, string funcReturnType = null)
+        static MethodDeclarationSyntax MatchMethodDeclaration(string baseTypeName, string baseTypeParameterName, ImmutableList<DerivedType> derivedTypes, string returnType, string? funcReturnType = null)
         {
-            funcReturnType = funcReturnType ?? returnType;
+            funcReturnType ??= returnType;
             return SyntaxFactory.MethodDeclaration(SyntaxFactory.ParseTypeName(returnType), StateMachineModel.MatchMethodName)
                 .WithTypeParameterList(SyntaxFactory.TypeParameterList().AddParameters(SyntaxFactory.TypeParameter("T")))
                 .Public()
