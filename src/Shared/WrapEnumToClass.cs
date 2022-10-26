@@ -88,7 +88,6 @@ namespace Switchyard.CodeGeneration
 
 		public class AddEnumClassMembersRewriter : CSharpSyntaxRewriter
 		{
-			const string UnionTypeAttributeName = "FunicularSwitch.Generators.UnionType";
 			readonly QualifiedTypeName m_UnionTypeName;
 			readonly bool m_AddUnionTypeAttribute;
 			readonly string m_NestedEnumTypeName;
@@ -224,52 +223,14 @@ namespace Switchyard.CodeGeneration
 						// ReSharper disable once PossibleNullReferenceException
 						node = node.WithMembers(node.Members.InsertRange(0, staticCaseMembers));
 
-						node = AddUnionTypeAttribute(node);
+						if (m_AddUnionTypeAttribute)
+							node = node.AssertUnionTypeAttribute();
 
 						return node;
 					}
 				}
 
 				return base.VisitClassDeclaration(node)!;
-			}
-
-			ClassDeclarationSyntax AddUnionTypeAttribute(ClassDeclarationSyntax node)
-			{
-				if (m_AddUnionTypeAttribute && node.AttributeLists
-						.SelectMany(l => l.Attributes)
-						.All(a => a.Name.ToString() != UnionTypeAttributeName))
-				{
-					node = node.WithAttributeLists(
-							SingletonList(
-								AttributeList(
-									SingletonSeparatedList(
-										Attribute(
-												QualifiedName(
-													QualifiedName(
-														IdentifierName("FunicularSwitch"),
-														IdentifierName("Generators")),
-													IdentifierName("UnionType")))
-											.WithArgumentList(
-												AttributeArgumentList(
-													SingletonSeparatedList(
-														AttributeArgument(
-																MemberAccessExpression(
-																	SyntaxKind.SimpleMemberAccessExpression,
-																	MemberAccessExpression(
-																		SyntaxKind.SimpleMemberAccessExpression,
-																		MemberAccessExpression(
-																			SyntaxKind.SimpleMemberAccessExpression,
-																			IdentifierName("FunicularSwitch"),
-																			IdentifierName("Generators")),
-																		IdentifierName("CaseOrder")),
-																	IdentifierName("AsDeclared")))
-															.WithNameEquals(
-																NameEquals(
-																	IdentifierName("CaseOrder"))))))))))
-					;
-				}
-
-				return node;
 			}
 
 			static string GetEnumMemberClassName(string memberName) => $"{memberName}_";

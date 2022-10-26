@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Formatting;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Switchyard.CodeGeneration
 {
@@ -16,6 +17,46 @@ namespace Switchyard.CodeGeneration
             var funicularGeneratorsReferenced = document.Project.AnalyzerReferences
                 .Any(reference => reference.Id.ToString().StartsWith("FunicularSwitch.Generators"));
             return funicularGeneratorsReferenced;
+        }
+
+        const string UnionTypeAttributeName = "FunicularSwitch.Generators.UnionType";
+        public static ClassDeclarationSyntax AssertUnionTypeAttribute(this ClassDeclarationSyntax node)
+        {
+	        if (node.AttributeLists
+		            .SelectMany(l => l.Attributes)
+		            .All(a => a.Name.ToString() != UnionTypeAttributeName))
+	        {
+		        node = node.WithAttributeLists(
+				        SingletonList(
+					        AttributeList(
+						        SingletonSeparatedList(
+							        Attribute(
+									        QualifiedName(
+										        QualifiedName(
+											        IdentifierName("FunicularSwitch"),
+											        IdentifierName("Generators")),
+										        IdentifierName("UnionType")))
+								        .WithArgumentList(
+									        AttributeArgumentList(
+										        SingletonSeparatedList(
+											        AttributeArgument(
+													        MemberAccessExpression(
+														        SyntaxKind.SimpleMemberAccessExpression,
+														        MemberAccessExpression(
+															        SyntaxKind.SimpleMemberAccessExpression,
+															        MemberAccessExpression(
+																        SyntaxKind.SimpleMemberAccessExpression,
+																        IdentifierName("FunicularSwitch"),
+																        IdentifierName("Generators")),
+															        IdentifierName("CaseOrder")),
+														        IdentifierName("AsDeclared")))
+												        .WithNameEquals(
+													        NameEquals(
+														        IdentifierName("CaseOrder"))))))))))
+			        ;
+	        }
+
+	        return node;
         }
 
         public static bool IsAnyKeyWord(this string identifier) =>
@@ -36,9 +77,9 @@ namespace Switchyard.CodeGeneration
 
         public static T AssertModifier<T>(this T syntax, SyntaxKind modifier, params SyntaxKind[] toRemove) where T : MemberDeclarationSyntax
         {
-            var token = SyntaxFactory.Token(modifier);
+            var token = Token(modifier);
             var modifiers = toRemove
-                .Select(SyntaxFactory.Token).Concat(new[] { token })
+                .Select(Token).Concat(new[] { token })
                 .SelectMany(r => syntax.Modifiers.Where(t => t.Text.ToString() == r.Text.ToString()))
                 .Aggregate(syntax.Modifiers, (tokenList, remove) => tokenList.Remove(remove));
 
@@ -103,8 +144,8 @@ namespace Switchyard.CodeGeneration
         public static ClassDeclarationSyntax WithConstructorFromGetOnlyProperties(this ClassDeclarationSyntax classDeclaration)
         {
             var properties = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().ToImmutableList();
-            var parameterList = SyntaxFactory.ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(properties.Select(p =>
-                SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.Name().ToParameterName())).WithType(p.Type))));
+            var parameterList = ParameterList(new SeparatedSyntaxList<ParameterSyntax>().AddRange(properties.Select(p =>
+                Parameter(ParseToken(p.Name().ToParameterName())).WithType(p.Type))));
 
             if (classDeclaration.Members.OfType<ConstructorDeclarationSyntax>()
                 .Any(c => c.ParameterList.Parameters.Count == parameterList.Parameters.Count && c.ParameterList.Parameters.Zip(parameterList.Parameters, (p1, p2) => p1.Type?.Name() == p2.Type?.Name()).All(b => b)))
@@ -112,13 +153,13 @@ namespace Switchyard.CodeGeneration
                 return classDeclaration;
             }
 
-            var body = SyntaxFactory.Block(
-                properties.Select(p => SyntaxFactory.ParseStatement($"{p.Name()} = {p.Name().ToParameterName()};"))
+            var body = Block(
+                properties.Select(p => ParseStatement($"{p.Name()} = {p.Name().ToParameterName()};"))
             );
 
             return classDeclaration
                 .AddMembers(
-                    SyntaxFactory.ConstructorDeclaration(classDeclaration.Name())
+                    ConstructorDeclaration(classDeclaration.Name())
                         .Public()
                         .WithParameterList(parameterList)
                         .WithBody(body)
@@ -126,18 +167,17 @@ namespace Switchyard.CodeGeneration
         }
 
         public static PropertyDeclarationSyntax WithGetter(this PropertyDeclarationSyntax property) =>
-            property.WithAccessorList(SyntaxFactory.AccessorList(
+            property.WithAccessorList(AccessorList(
                 new SyntaxList<AccessorDeclarationSyntax>(
-                    SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                        .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)))));
+                    AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                        .WithSemicolonToken(Token(SyntaxKind.SemicolonToken)))));
 
         public static PropertyDeclarationSyntax MakeProperty(string typeName, string identifier,
             Func<PropertyDeclarationSyntax, PropertyDeclarationSyntax>? modify = null)
         {
-            var declarationSyntax = SyntaxFactory
-                .PropertyDeclaration(SyntaxFactory.ParseTypeName(typeName), identifier)
-                .AddAccessorListAccessors(SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
-                    .WithSemicolonToken(SyntaxFactory.ParseToken(";")))
+            var declarationSyntax = PropertyDeclaration(ParseTypeName(typeName), identifier)
+                .AddAccessorListAccessors(AccessorDeclaration(SyntaxKind.GetAccessorDeclaration)
+                    .WithSemicolonToken(ParseToken(";")))
                 .Public()
                 .WithoutTrivia();
             return modify != null ? modify(declarationSyntax) : declarationSyntax;
@@ -175,25 +215,25 @@ namespace Switchyard.CodeGeneration
 
         public static T WithExpressionBody<T>(this T declaration, string statement) where T : BaseMethodDeclarationSyntax =>
             (T)declaration
-                .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(SyntaxFactory.ParseExpression(statement)))
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+                .WithExpressionBody(ArrowExpressionClause(ParseExpression(statement)))
+                .WithSemicolonToken(Token(SyntaxKind.SemicolonToken));
 
 
         public static MemberDeclarationSyntax WithParameters(this MethodDeclarationSyntax method,
             params (string type, string name)[] parameters)
             => method.AddParameterListParameters(parameters.Select(p =>
-                SyntaxFactory.Parameter(SyntaxFactory.ParseToken(p.name))
-                    .WithType(SyntaxFactory.ParseTypeName(p.type))).ToArray());
+                Parameter(ParseToken(p.name))
+                    .WithType(ParseTypeName(p.type))).ToArray());
 
         public static ParameterSyntax AddThis(this ParameterSyntax parameter)
-            => parameter.WithModifiers(SyntaxTokenList.Create(SyntaxFactory.Token(SyntaxKind.ThisKeyword)));
+            => parameter.WithModifiers(SyntaxTokenList.Create(Token(SyntaxKind.ThisKeyword)));
 
         public static SyntaxNode ReplaceClass(this SyntaxNode root, Func<ClassDeclarationSyntax, bool> predicate, ClassDeclarationSyntax newClass) => root.ReplaceNode(root.FirstAncestorOrSelf(predicate)!, newClass);
 
         public static TRoot AddOrUpdateClass<TRoot>(this TRoot root, string className,
-            Func<ClassDeclarationSyntax, ClassDeclarationSyntax> initialUpdateNode, Func<ClassDeclarationSyntax, ClassDeclarationSyntax> updateNode) where TRoot : SyntaxNode
+            Func<ClassDeclarationSyntax, ClassDeclarationSyntax> createNode, Func<ClassDeclarationSyntax, ClassDeclarationSyntax> updateNode) where TRoot : SyntaxNode
         {
-            return root.AddOrUpdateNode(c => c.Name() == className, () => initialUpdateNode(SyntaxFactory.ClassDeclaration(className)), updateNode);
+            return root.AddOrUpdateNode(c => c.Name() == className, () => createNode(ClassDeclaration(className)), updateNode);
         }
 
         public static TRoot AddOrUpdateNode<TRoot, TOrig>(this TRoot root, Func<TOrig, bool> predicate,
@@ -269,7 +309,7 @@ namespace Switchyard.CodeGeneration
 
             return c.AddUsings(namespaces
 		        .Where(u => c.Usings.All(d => d.Name.Name() != u))
-		        .Select(u => SyntaxFactory.UsingDirective(SyntaxFactory.ParseName(u)))
+		        .Select(u => UsingDirective(ParseName(u)))
 		        .ToArray()
 	        ).NormalizeWhitespace();
         }
