@@ -17,7 +17,7 @@ namespace StateMachineSpecs
             public NoLicense_() : base(UnionCases.NoLicense)
             {
             }
-            #region NoLicense -> NotRegistered [label="DemoLicenseFound"]
+            #region NoLicense -> NotRegistered_NoDisplayName [label="DemoLicenseFound"]
             public NotRegistered_ DemoLicenseFound() => new NotRegistered_();
             public NotRegistered_ DemoLicenseFound(LicenseTrigger.DemoLicenseFound_ trigger) => DemoLicenseFound();
             #endregion
@@ -32,15 +32,15 @@ namespace StateMachineSpecs
             public NotRegistered_() : base(UnionCases.NotRegistered)
             {
             }
-            #region NotRegistered -> Full [label="FullLicenseFound"]
+            #region NotRegistered_NoDisplayName -> Full [label="FullLicenseFound"]
             public Full_ FullLicenseFound() => new Full_();
             public Full_ FullLicenseFound(LicenseTrigger.FullLicenseFound_ trigger) => FullLicenseFound();
             #endregion
-            #region NotRegistered -> NotRegistered [label="DemoLicenseFound"]
+            #region NotRegistered_NoDisplayName -> NotRegistered_NoDisplayName [label="DemoLicenseFound"]
             public NotRegistered_ DemoLicenseFound() => new NotRegistered_();
             public NotRegistered_ DemoLicenseFound(LicenseTrigger.DemoLicenseFound_ trigger) => DemoLicenseFound();
             #endregion
-            #region NotRegistered -> DemoRegistered [label="DemoRegistered"]
+            #region NotRegistered_NoDisplayName -> DemoRegistered [label="DemoRegistered"]
             public DemoRegistered_ DemoRegistered() => new DemoRegistered_();
             public DemoRegistered_ DemoRegistered(LicenseTrigger.DemoRegistered_ trigger) => DemoRegistered();
             #endregion

@@ -49,7 +49,7 @@ namespace Switchyard.CodeGeneration
                         returnType: Names.GetVertexClassName(dotFilename, edge.Destination),
                         fullParameterClassName: Names.GetParameterType(dotFilename, edge),
                         nestedParameterClassName: Names.GetTriggerNestedType(edge)));
-                return new VertexClass(Names.GetStateName(v), Names.GetVertexClassName(dotFilename, v), transitions.ToImmutableList());
+                return new VertexClass(Names.GetStateName(v), Names.GetStateDisplayName(v), Names.GetVertexClassName(dotFilename, v), transitions.ToImmutableList());
             }).ToImmutableList();
             ExtensionClassName = Names.GetExtensionClassName(dotFilename);
             TransitionResultClassName = Names.GetTransitionResultClassName(dotFilename);
@@ -60,12 +60,14 @@ namespace Switchyard.CodeGeneration
         public class VertexClass
         {
             public string StateName { get; }
+            public string StateDisplayName { get; }
             public QualifiedTypeName ClassName { get; }
             public ImmutableList<TransitionMethod> Transitions { get; }
 
-            public VertexClass(string stateName, QualifiedTypeName className, ImmutableList<TransitionMethod> transitions)
+            public VertexClass(string stateName, string stateDisplayName, QualifiedTypeName className, ImmutableList<TransitionMethod> transitions)
             {
                 StateName = stateName;
+                StateDisplayName = stateDisplayName;
                 ClassName = className;
                 Transitions = transitions;
             }
@@ -110,7 +112,7 @@ namespace Switchyard.CodeGeneration
 	            return fileNameWithoutExtension;
             }
 
-            public static QualifiedTypeName GetVertexClassName(string dotFileName, DotVertex<string> vertex) => new($"{vertex.Id}_", GetStateClassName(dotFileName).Yield());
+            public static QualifiedTypeName GetVertexClassName(string dotFileName, DotVertex<string> vertex) => new($"{GetStateDisplayName(vertex)}_", GetStateClassName(dotFileName).Yield());
 
             public static string GetTransitionMethod(DotEdge<string> edge) => edge.Label;
 
@@ -119,6 +121,8 @@ namespace Switchyard.CodeGeneration
             public static string GetTriggerNestedType(DotEdge<string> dotEdge) => $"{dotEdge.Label}_";
 
             public static string GetStateName(DotVertex<string> vertex) => vertex.Id;
+            
+            public static string GetStateDisplayName(DotVertex<string> vertex) => vertex.Attributes.TryGetValue("label", out var label) ? label : vertex.Id;
 
             public static string GetExtensionClassName(string dotFilename) => $"{GetBaseName(dotFilename)}Extension";
 

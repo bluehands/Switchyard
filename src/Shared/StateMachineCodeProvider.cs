@@ -136,8 +136,8 @@ namespace Switchyard.CodeGeneration
 						QualifiedTypeName.NoParents(names.StateClassName),
 						names.BaseName.ToParameterName(),
 						StateMachineModel.EnumPropertyName,
-						names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName.FullName, v.StateName.ToParameterName(),
-								$"{names.StateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateName}"))
+						names.VertexClasses.Select(v => new MatchMethods.DerivedType(v.ClassName.FullName, v.StateDisplayName.ToParameterName(),
+								$"{names.StateClassName}.{StateMachineModel.NestedEnumTypeName}.{v.StateDisplayName}"))
 							.ToImmutableList())
 					.AddMatchMethods(
 						QualifiedTypeName.NoParents(names.TriggerClassName),
@@ -203,7 +203,7 @@ namespace Switchyard.CodeGeneration
 							.AddSections(names.VertexClasses.Select(vertex =>
 									SwitchSection()
 										.AddLabels(CaseSwitchLabel(ParseExpression(
-											$"{names.StateClassName}.{StateMachineModel.NestedEnumTypeName}.{vertex.StateName}")))
+											$"{names.StateClassName}.{StateMachineModel.NestedEnumTypeName}.{vertex.StateDisplayName}")))
 										.AddStatements(Block(
 											SwitchStatement(ParseExpression(
 													$"{parameterParameterName}.{StateMachineModel.EnumPropertyName}"))
@@ -310,7 +310,7 @@ namespace Switchyard.CodeGeneration
 		{
 			var stateClassName = names.StateClassName;
 			var nestedEnumTypeName = StateMachineModel.NestedEnumTypeName;
-			var enumMemberNames = names.VertexClasses.Select(v => v.StateName);
+			var enumMemberNames = names.VertexClasses.Select(v => v.StateDisplayName);
 
 			return AddOrUpdateEnumClass(documentRoot, stateClassName, nestedEnumTypeName, enumMemberNames, addUnionTypeAttribute);
 		}
