@@ -8,32 +8,33 @@ namespace Switchyard.CodeGeneration.Test;
 [TestClass]
 public abstract class with_state_machine_code_provider : CodeProviderSpec
 {
-    protected const string LicenseDotGraph = """
-                                             digraph LicenseFlow {
-                                                 
-                                               NoLicense;
-                                               NotRegistered_NoDisplayName [label="NotRegistered"];
-                                               DemoRegistered;
-                                               CommunityRegistered;    
-                                               Full;
-                                                 
-                                               NoLicense -> NotRegistered_NoDisplayName [label="DemoLicenseFound"];
-                                               NoLicense -> Full [label="FullLicenseFound"];
-                                               
-                                               NotRegistered_NoDisplayName -> Full [label="FullLicenseFound"];
-                                               NotRegistered_NoDisplayName -> NotRegistered_NoDisplayName [label="DemoLicenseFound"];
-                                               NotRegistered_NoDisplayName -> DemoRegistered [label="DemoRegistered"];
-                                               
-                                               DemoRegistered -> CommunityRegistered [label="CommunityRegistered"];
-                                               DemoRegistered -> DemoRegistered [label="DemoLicenseFound"];
-                                               DemoRegistered -> Full [label="FullLicenseFound"];
-                                               
-                                               Full -> Full [label="FullLicenseFound"];
-                                               
-                                               CommunityRegistered -> Full [label="FullLicenseFound"];
-                                               CommunityRegistered -> CommunityRegistered [label="DemoLicenseFound"];
-                                             }
-                                             """;
+    protected const string LicenseDotGraph =
+        """
+        digraph LicenseFlow {
+            
+          NoLicense;
+          NotRegistered_NoDisplayName [label="NotRegistered"];
+          DemoRegistered;
+          CommunityRegistered;    
+          Full;
+            
+          NoLicense -> NotRegistered_NoDisplayName [label="DemoLicenseFound"];
+          NoLicense -> Full [label="FullLicenseFound"];
+          
+          NotRegistered_NoDisplayName -> Full [label="FullLicenseFound"];
+          NotRegistered_NoDisplayName -> NotRegistered_NoDisplayName [label="DemoLicenseFound"];
+          NotRegistered_NoDisplayName -> DemoRegistered [label="DemoRegistered"];
+          
+          DemoRegistered -> CommunityRegistered [label="CommunityRegistered"];
+          DemoRegistered -> DemoRegistered [label="DemoLicenseFound"];
+          DemoRegistered -> Full [label="FullLicenseFound"];
+          
+          Full -> Full [label="FullLicenseFound"];
+          
+          CommunityRegistered -> Full [label="FullLicenseFound"];
+          CommunityRegistered -> CommunityRegistered [label="DemoLicenseFound"];
+        }
+        """;
 
     protected override async Task Refactor(AdhocWorkspace workspace, Document document, SyntaxNode root)
     {

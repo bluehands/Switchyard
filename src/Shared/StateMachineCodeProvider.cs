@@ -15,7 +15,7 @@ using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Switchyard.CodeGeneration
 {
-	public static class StateMachineCodeProvider
+    public static class StateMachineCodeProvider
 	{
 		public static Option<string> TryGetDotFilename(Document document)
 		{
