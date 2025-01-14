@@ -2,15 +2,15 @@
 using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
+using FunicularSwitch.Extensions;
 using Graphviz4Net.Dot;
 
 namespace Switchyard.CodeGeneration
 {
     public class StateMachineModel
     {
-        public const string StatePropertyName = "State";
-        public const string TriggerPropertyName = "Trigger";
-        public const string ParametersParameterName = "parameters";
+	    public string DotFilename { get; }
+	    public const string TriggerParameterName = "trigger";
         public const string NestedEnumTypeName = WrapEnumToClass.DefaultNestedEnumTypeName;
         public const string EnumPropertyName = WrapEnumToClass.DefaultEnumPropertyName;
         public const string ApplyMethodName = "Apply";
@@ -18,11 +18,8 @@ namespace Switchyard.CodeGeneration
         public const string MatchMethodName = "Match";
 
         public string BaseName { get; }
-        public string BaseInterfaceName { get; }
-        public string OuterStateClassName { get; }
-        public string OuterParameterClassName { get; }
-        public string ParameterInterfaceName { get; }
-        public string OuterTriggerClassName { get; }
+        public string StateClassName { get; }
+        public string TriggerClassName { get; }
 
         public ImmutableList<VertexClass> VertexClasses { get; }
 
@@ -37,23 +34,23 @@ namespace Switchyard.CodeGeneration
 
         public StateMachineModel(string dotFilename, DotGraph<string> stateGraph)
         {
-            BaseName = Names.GetBaseName(dotFilename);
-            BaseInterfaceName = Names.GetBaseInterfaceName(dotFilename);
-            ParameterInterfaceName = Names.GetParameterInterfaceName(dotFilename);
-            OuterStateClassName = Names.GetStateClassName(dotFilename);
-            OuterTriggerClassName = Names.GetTriggerClassName(dotFilename);
+	        DotFilename = dotFilename;
+	        BaseName = Names.GetBaseName(dotFilename);
+            StateClassName = Names.GetStateClassName(dotFilename);
+            TriggerClassName = Names.GetTriggerClassName(dotFilename);
             VertexClasses = stateGraph.AllVertices.Select(v =>
             {
                 var transitions = stateGraph.VerticesEdges.Where(e => e.Source == v)
                     .Select(edge => new TransitionMethod(
                         sourceState: Names.GetStateName(edge.Source),
+                        targetState: Names.GetStateName(edge.Destination),
+                        trigger: edge.Label,
                         methodName: Names.GetTransitionMethod(edge),
                         returnType: Names.GetVertexClassName(dotFilename, edge.Destination),
                         fullParameterClassName: Names.GetParameterType(dotFilename, edge),
-                        nestedParameterClassName: Names.GetParameterNestedType(edge)));
-                return new VertexClass(Names.GetStateName(v), Names.GetVertexClassName(dotFilename, v), transitions.ToImmutableList());
+                        nestedParameterClassName: Names.GetTriggerNestedType(edge)));
+                return new VertexClass(Names.GetStateName(v), Names.GetStateDisplayName(v), Names.GetVertexClassName(dotFilename, v), transitions.ToImmutableList());
             }).ToImmutableList();
-            OuterParameterClassName = Names.GetParameterOuterType(dotFilename);
             ExtensionClassName = Names.GetExtensionClassName(dotFilename);
             TransitionResultClassName = Names.GetTransitionResultClassName(dotFilename);
             TransitionResultTransitionClassName = Names.GetTransitionResultTransitionClassName(dotFilename);
@@ -63,12 +60,14 @@ namespace Switchyard.CodeGeneration
         public class VertexClass
         {
             public string StateName { get; }
-            public string ClassName { get; }
+            public string StateDisplayName { get; }
+            public QualifiedTypeName ClassName { get; }
             public ImmutableList<TransitionMethod> Transitions { get; }
 
-            public VertexClass(string stateName, string className, ImmutableList<TransitionMethod> transitions)
+            public VertexClass(string stateName, string stateDisplayName, QualifiedTypeName className, ImmutableList<TransitionMethod> transitions)
             {
                 StateName = stateName;
+                StateDisplayName = stateDisplayName;
                 ClassName = className;
                 Transitions = transitions;
             }
@@ -77,18 +76,23 @@ namespace Switchyard.CodeGeneration
         public class TransitionMethod
         {
             public string SourceState { get; }
+            public string TargetState { get; }
             public string MethodName { get; }
-            public string ReturnType { get; }
+            public QualifiedTypeName ReturnType { get; }
             public string FullParameterClassName { get; }
             public string NestedParameterClassName { get; }
+            public string Trigger { get; }
 
-            public TransitionMethod(string sourceState, string methodName, string returnType, string fullParameterClassName, string nestedParameterClassName)
+            public TransitionMethod(string sourceState, string targetState, string methodName,
+	            QualifiedTypeName returnType, string fullParameterClassName, string nestedParameterClassName, string trigger)
             {
                 SourceState = sourceState;
+                TargetState = targetState;
                 MethodName = methodName;
                 ReturnType = returnType;
                 FullParameterClassName = fullParameterClassName;
                 NestedParameterClassName = nestedParameterClassName;
+                Trigger = trigger;
             }
         }
 
@@ -98,23 +102,27 @@ namespace Switchyard.CodeGeneration
 
             public static string GetTriggerClassName(string dotFileName) => $"{GetBaseName(dotFileName)}Trigger";
 
-            public static string GetBaseInterfaceName(string dotFileName) => $"I{GetBaseName(dotFileName)}";
+            public static string GetBaseName(string dotFileName)
+            {
+	            static string RemoveAtEnd(string s, string toRemoveAtEnd) => s.EndsWith(toRemoveAtEnd) && s.Length > toRemoveAtEnd.Length ? s.Substring(0, s.Length - toRemoveAtEnd.Length) : s;
 
-            public static string GetParameterInterfaceName(string dotFileName) => $"I{GetBaseName(dotFileName)}Parameter";
+	            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(dotFileName);
+	            fileNameWithoutExtension = RemoveAtEnd(fileNameWithoutExtension, "State");
+	            fileNameWithoutExtension = RemoveAtEnd(fileNameWithoutExtension, "States");
+	            return fileNameWithoutExtension;
+            }
 
-            public static string GetBaseName(string dotFileName) => Path.GetFileNameWithoutExtension(dotFileName);
-
-            public static string GetVertexClassName(string dotFileName, DotVertex<string> vertex) => $"{vertex.Id}{GetBaseName(dotFileName)}";
+            public static QualifiedTypeName GetVertexClassName(string dotFileName, DotVertex<string> vertex) => new($"{GetStateDisplayName(vertex)}_", GetStateClassName(dotFileName).Yield());
 
             public static string GetTransitionMethod(DotEdge<string> edge) => edge.Label;
 
-            public static string GetParameterType(string dotFileName, DotEdge<string> edge) => $"{GetBaseName(dotFileName)}Parameters.{GetParameterNestedType(edge)}";
+            public static string GetParameterType(string dotFileName, DotEdge<string> edge) => $"{GetTriggerClassName(dotFileName)}.{GetTriggerNestedType(edge)}";
 
-            public static string GetParameterOuterType(string dotFileName) => $"{GetBaseName(dotFileName)}Parameters";
-
-            public static string GetParameterNestedType(DotEdge<string> dotEdge) => dotEdge.Label;
+            public static string GetTriggerNestedType(DotEdge<string> dotEdge) => $"{dotEdge.Label}_";
 
             public static string GetStateName(DotVertex<string> vertex) => vertex.Id;
+            
+            public static string GetStateDisplayName(DotVertex<string> vertex) => vertex.Attributes.TryGetValue("label", out var label) ? label : vertex.Id;
 
             public static string GetExtensionClassName(string dotFilename) => $"{GetBaseName(dotFilename)}Extension";
 

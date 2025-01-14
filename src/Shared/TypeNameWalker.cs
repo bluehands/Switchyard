@@ -55,7 +55,7 @@ namespace Switchyard.CodeGeneration
     {
         public static QualifiedTypeName NoParents(string name) => new QualifiedTypeName(name, Enumerable.Empty<string>());
 
-        readonly string m_FullName;
+        public string FullName { get; }
         public ImmutableArray<string> NestingParents { get; }
         public string Name { get; }
 
@@ -65,21 +65,21 @@ namespace Switchyard.CodeGeneration
         {
             Name = name;
             NestingParents = nestingParents.ToImmutableArray();
-            m_FullName = QualifiedName(".");
+            FullName = QualifiedName(".");
         }
 
-        public override string ToString() => m_FullName;
+        public override string ToString() => FullName;
 
         public bool Equals(QualifiedTypeName other)
         {
             if (ReferenceEquals(null, other)) return false;
             if (ReferenceEquals(this, other)) return true;
-            return m_FullName == other.m_FullName;
+            return FullName == other.FullName;
         }
 
         public override bool Equals(object obj) => ReferenceEquals(this, obj) || obj is QualifiedTypeName other && Equals(other);
 
-        public override int GetHashCode() => m_FullName.GetHashCode();
+        public override int GetHashCode() => FullName.GetHashCode();
 
         public static bool operator ==(QualifiedTypeName left, QualifiedTypeName right) => Equals(left, right);
 

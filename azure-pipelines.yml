@@ -15,7 +15,7 @@ variables:
   buildConfiguration: 'Release'
   patch: $[counter('VersionCounter', 0)]
 
-name: 1.2.$(patch) # Set the value of $(Build.BuildNumber)
+name: 2.0.$(patch) # Set the value of $(Build.BuildNumber)
 
 steps:
 

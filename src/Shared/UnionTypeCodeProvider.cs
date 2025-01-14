@@ -47,15 +47,19 @@ namespace Switchyard.CodeGeneration
 
         public static async Task<Document> EnumToClass(Document document, EnumDeclarationSyntax enumNode, CancellationToken cancellationToken)
         {
+	        var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+	        if (root == null)
+		        return document;
+
             var funicularGeneratorsReferenced = document.FunicularGeneratorsReferenced();
 
             var enumName = enumNode.QualifiedName();
             var caseTypeNames = enumNode.Members.Select(m => m.Identifier.Text);
 
-            var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
+            root = root.AssertUsingDirectives("System", "System.Linq", "System.Threading.Tasks");
 
             var unionType = enumName.Name == WrapEnumToClass.DefaultNestedEnumTypeName
-                ? (ClassDeclarationSyntax)enumNode.Parent
+                ? (ClassDeclarationSyntax)enumNode.Parent!
                 : Option.None<ClassDeclarationSyntax>();
             var unionTypeName = unionType.Match(u => u.QualifiedName(), () => enumNode.QualifiedName());
 
